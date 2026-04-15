@@ -1221,19 +1221,29 @@ async function doConfirm() {
       return;
     }
     
-    // Méthode 3 : Chercher CHF dans le HTML (uniquement francs suisses)
-    const chfMatches = html.match(/CHF\s*([0-9]+[.,][0-9]{2})/g) || 
-                       html.match(/Fr\.\s*([0-9]+[.,][0-9]{2})/g) || [];
-    const prices = chfMatches
-      .map(m => parseFloat(m.replace(/[^0-9.,]/g,'').replace(',','.')))
-      .filter(p => p > 1 && p < 5000);
+    // Méthode 3 : Chercher CHF dans le HTML (uniquement le vrai prix produit)
+    const chfRegex = /CHF\s*([0-9]+[.,][0-9]{2})/g;
+    const frRegex = /Fr\.?\s*([0-9]+[.,][0-9]{2})/g;
+    let allPrices = [];
+    let m;
+    while ((m = chfRegex.exec(html)) !== null) {
+      const val = parseFloat(m[1].replace(',','.'));
+      // Ignorer les petits montants (< 10 CHF = frais de livraison, codes promo, etc.)
+      if (val >= 10 && val < 5000) allPrices.push(val);
+    }
+    while ((m = frRegex.exec(html)) !== null) {
+      const val = parseFloat(m[1].replace(',','.'));
+      if (val >= 10 && val < 5000) allPrices.push(val);
+    }
     
-    if (prices.length > 0) {
-      // Prendre le prix le plus commun (évite les prix de livraison etc)
+    if (allPrices.length > 0) {
+      // Prendre le prix le plus fréquent (le vrai prix article apparaît plusieurs fois)
       const freq = {};
-      prices.forEach(p => freq[p] = (freq[p]||0)+1);
-      const mostCommon = Object.entries(freq).sort((a,b)=>b[1]-a[1])[0];
-      const price = parseFloat(mostCommon[0]);
+      allPrices.forEach(p => freq[p] = (freq[p]||0)+1);
+      // Trier par fréquence décroissante, puis par valeur décroissante (évite les petits montants)
+      const sorted = Object.entries(freq)
+        .sort((a,b) => b[1]-a[1] || parseFloat(b[0])-parseFloat(a[0]));
+      const price = parseFloat(sorted[0][0]);
       const priceStr = 'CHF ' + price.toFixed(2);
       tag.style.color = '#059669';
       tag.textContent = '💰 ' + priceStr;
