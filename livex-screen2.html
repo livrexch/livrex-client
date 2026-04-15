@@ -153,69 +153,25 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
     </div>
     <div class="sec">
       <div class="sec-hd"><span class="sec-t">Livraison</span></div>
-      <div class="addr-card">
-        <div class="addr-row">
-          <div class="addr-ic" style="background:#EEF8FF;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
-          <div class="addr-body"><div class="addr-lbl">Rue</div><input class="addr-inp" id="addrRue" type="text" placeholder="Ex: Rue de Rive" oninput="buildAddress()"/></div>
-        </div>
-        <div class="addr-row">
-          <div class="addr-ic" style="background:#F0FDF4;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
-          <div class="addr-body"><div class="addr-lbl">Numéro</div><input class="addr-inp" id="addrNum" type="text" placeholder="Ex: 14" oninput="buildAddress()"/></div>
-        </div>
-        <div class="addr-row">
-          <div class="addr-ic" style="background:#FFF7ED;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2.2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
-          <div class="addr-body">
-            <div class="addr-lbl">NPA</div>
-            <select class="addr-inp" id="addrNpa" onchange="buildAddress()" style="cursor:pointer;appearance:none;">
-              <option value="">Sélectionne ton NPA</option>
-              <option value="1200">1200 – Genève</option>
-              <option value="1201">1201 – Genève</option>
-              <option value="1202">1202 – Genève</option>
-              <option value="1203">1203 – Genève</option>
-              <option value="1204">1204 – Genève</option>
-              <option value="1205">1205 – Genève</option>
-              <option value="1206">1206 – Genève</option>
-              <option value="1207">1207 – Genève</option>
-              <option value="1208">1208 – Genève</option>
-              <option value="1209">1209 – Genève</option>
-              <option value="1211">1211 – Genève</option>
-              <option value="1212">1212 – Genève / Grand-Lancy</option>
-              <option value="1213">1213 – Petit-Lancy</option>
-              <option value="1214">1214 – Vernier</option>
-              <option value="1215">1215 – Genève 15</option>
-              <option value="1216">1216 – Cointrin</option>
-              <option value="1217">1217 – Meyrin</option>
-              <option value="1218">1218 – Le Grand-Saconnex</option>
-              <option value="1219">1219 – Châtelaine</option>
-              <option value="1220">1220 – Les Avanchets</option>
-              <option value="1222">1222 – Vésenaz</option>
-              <option value="1223">1223 – Cologny</option>
-              <option value="1224">1224 – Chêne-Bougeries</option>
-              <option value="1225">1225 – Chêne-Bourg</option>
-              <option value="1226">1226 – Thônex</option>
-              <option value="1227">1227 – Les Acacias / Carouge</option>
-              <option value="1228">1228 – Plan-les-Ouates</option>
-              <option value="1231">1231 – Conches</option>
-              <option value="1232">1232 – Confignon</option>
-              <option value="1233">1233 – Bernex</option>
-              <option value="1234">1234 – Vessy</option>
-              <option value="1236">1236 – Cartigny</option>
-              <option value="1237">1237 – Avully</option>
-              <option value="1239">1239 – Collex</option>
-              <option value="1240">1240 – Genthod</option>
-              <option value="1241">1241 – Puplinge</option>
-              <option value="1242">1242 – Satigny</option>
-              <option value="1243">1243 – Presinge</option>
-              <option value="1244">1244 – Choulex</option>
-              <option value="1245">1245 – Collonge-Bellerive</option>
-            </select>
+      <div class="addr-card" style="overflow:visible;">
+        <div class="addr-row" style="position:relative;">
+          <div class="addr-ic" style="background:#EEF8FF;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.2" stroke-linecap="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+          <div class="addr-body" style="position:relative;">
+            <div class="addr-lbl">Adresse de livraison</div>
+            <input class="addr-inp" id="addrInp" type="text" 
+              placeholder="Ex: Route de Meyrin 24A, Genève..." 
+              autocomplete="off"
+              oninput="onAddrInput(this.value)"
+              onkeydown="onAddrKey(event)"/>
+            <!-- Dropdown autocomplétion -->
+            <div id="addrDropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:-52px;right:-18px;background:#fff;border-radius:16px;box-shadow:0 8px 32px rgba(15,23,42,0.15);z-index:999;overflow:hidden;border:1px solid #e2e8f0;max-height:220px;overflow-y:auto;"></div>
           </div>
         </div>
         <div class="addr-row">
           <div class="addr-ic" style="background:#FFFBEE;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
           <div class="addr-body"><div class="addr-lbl">Note (optionnel)</div><input class="addr-inp" id="noteInp" type="text" placeholder="Étage, digicode, sonnette..."/></div>
         </div>
-      </div>
+      </div>      </div>
     </div>
     <div class="sec">
       <div class="info-card">
@@ -283,47 +239,120 @@ const STORES = {
   'Bongénie': { abbr:'BNG', bg:'#F5F3FF', c:'#7C3AED' },
 };
 
-function buildAddress() {
-  const rue = document.getElementById('addrRue')?.value.trim() || '';
-  const num = document.getElementById('addrNum')?.value.trim() || '';
-  const npa = document.getElementById('addrNpa')?.value || '';
-  const npaLabel = npa ? npa + ' Genève' : '';
-  // Construire l'adresse complète dans un champ caché
-  const full = [rue + (num ? ' ' + num : ''), npaLabel].filter(Boolean).join(', ');
-  if (!document.getElementById('addrInp')) {
-    // Créer le champ caché si pas encore là
-    const inp = document.createElement('input');
-    inp.type = 'hidden'; inp.id = 'addrInp';
-    document.body.appendChild(inp);
+// ═══════════════════════════════════════
+// AUTOCOMPLÉTION ADRESSE GENÈVE
+// Utilise l'API Nominatim (OpenStreetMap) — gratuite, sans clé API
+// ═══════════════════════════════════════
+let addrTimer = null;
+let addrSuggestions = [];
+let addrSelectedIdx = -1;
+
+async function onAddrInput(val) {
+  onChange();
+  const dropdown = document.getElementById('addrDropdown');
+  
+  if (!val || val.length < 3) {
+    dropdown.style.display = 'none';
+    return;
   }
+  
+  clearTimeout(addrTimer);
+  addrTimer = setTimeout(async () => {
+    try {
+      // Recherche limitée à Genève (CH) via Nominatim
+      const query = encodeURIComponent(val + ' Genève');
+      const url = `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=5&countrycodes=ch&addressdetails=1&viewbox=6.0,46.1,6.3,46.3&bounded=1`;
+      
+      const resp = await fetch(url, {
+        headers: { 'Accept-Language': 'fr', 'User-Agent': 'LIVREX-App/1.0' }
+      });
+      const results = await resp.json();
+      
+      addrSuggestions = results.filter(r => r.address);
+      addrSelectedIdx = -1;
+      
+      if (!addrSuggestions.length) {
+        dropdown.style.display = 'none';
+        return;
+      }
+      
+      dropdown.innerHTML = addrSuggestions.map((r, i) => {
+        const addr = r.address;
+        const street = addr.road || addr.pedestrian || addr.footway || '';
+        const num = addr.house_number || '';
+        const npa = addr.postcode || '';
+        const city = addr.city || addr.town || addr.village || 'Genève';
+        const display = [street + (num ? ' ' + num : ''), npa + ' ' + city].filter(Boolean).join(', ');
+        return `<div class="addr-suggestion" data-idx="${i}" onclick="selectAddr(${i})" 
+          style="padding:12px 16px;cursor:pointer;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:10px;transition:background 0.1s;"
+          onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''"  >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" style="flex-shrink:0;"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:#0f172a;">${display}</div>
+            <div style="font-size:11px;color:#94a3b8;margin-top:1px;">${r.display_name?.split(',').slice(0,3).join(',') || ''}</div>
+          </div>
+        </div>`;
+      }).join('');
+      
+      dropdown.style.display = 'block';
+    } catch(e) {
+      dropdown.style.display = 'none';
+    }
+  }, 400);
+}
+
+function selectAddr(idx) {
+  const r = addrSuggestions[idx];
+  if (!r) return;
+  const addr = r.address;
+  const street = addr.road || addr.pedestrian || addr.footway || '';
+  const num = addr.house_number || '';
+  const npa = addr.postcode || '';
+  const city = addr.city || addr.town || addr.village || 'Genève';
+  const full = [street + (num ? ' ' + num : ''), npa + ' ' + city].filter(Boolean).join(', ');
+  
   document.getElementById('addrInp').value = full;
+  document.getElementById('addrDropdown').style.display = 'none';
+  addrSuggestions = [];
   onChange();
 }
+
+function onAddrKey(e) {
+  const dropdown = document.getElementById('addrDropdown');
+  const items = dropdown.querySelectorAll('.addr-suggestion');
+  if (!items.length) return;
+  
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    addrSelectedIdx = Math.min(addrSelectedIdx + 1, items.length - 1);
+    items.forEach((el, i) => el.style.background = i === addrSelectedIdx ? '#f0f4ff' : '');
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    addrSelectedIdx = Math.max(addrSelectedIdx - 1, 0);
+    items.forEach((el, i) => el.style.background = i === addrSelectedIdx ? '#f0f4ff' : '');
+  } else if (e.key === 'Enter' && addrSelectedIdx >= 0) {
+    e.preventDefault();
+    selectAddr(addrSelectedIdx);
+  } else if (e.key === 'Escape') {
+    dropdown.style.display = 'none';
+  }
+}
+
+// Fermer dropdown si on clique ailleurs
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#addrDropdown') && e.target.id !== 'addrInp') {
+    const dd = document.getElementById('addrDropdown');
+    if (dd) dd.style.display = 'none';
+  }
+});
 
 window.addEventListener('load', () => {
   addArt(); addArt();
   // Pré-remplir l'adresse depuis le profil
   const savedAddr = localStorage.getItem('livex_prefill_addr') || localStorage.getItem('livex_user_addr') || '';
   if (savedAddr) {
-    // Essayer de parser l'adresse sauvegardée dans les champs
-    const parts = savedAddr.split(',');
-    if (parts.length >= 1) {
-      const streetParts = parts[0].trim().split(' ');
-      const num = streetParts[streetParts.length - 1];
-      if (/^\d+[a-z]?$/i.test(num)) {
-        const rue = streetParts.slice(0, -1).join(' ');
-        if(document.getElementById('addrRue')) document.getElementById('addrRue').value = rue;
-        if(document.getElementById('addrNum')) document.getElementById('addrNum').value = num;
-      } else {
-        if(document.getElementById('addrRue')) document.getElementById('addrRue').value = parts[0].trim();
-      }
-    }
-    if (!document.getElementById('addrInp')) {
-      const inp = document.createElement('input');
-      inp.type = 'hidden'; inp.id = 'addrInp';
-      document.body.appendChild(inp);
-    }
-    document.getElementById('addrInp').value = savedAddr;
+    const inp = document.getElementById('addrInp');
+    if (inp) inp.value = savedAddr;
   }
   localStorage.removeItem('livex_prefill_addr');
   const name = localStorage.getItem('livex_store') || 'H&M';
@@ -520,10 +549,9 @@ function isValidOrder() {
     (i.url && i.url.startsWith('http'))
   );
   if (!validItems.length) return false;
-  // Adresse obligatoire : rue + NPA
-  const rue = document.getElementById('addrRue')?.value.trim() || '';
-  const npa = document.getElementById('addrNpa')?.value || '';
-  if (rue.length < 3 || !npa) return false;
+  // Adresse obligatoire
+  const addr = document.getElementById('addrInp')?.value.trim() || '';
+  if (addr.length < 5) return false;
   return true;
 }
 
