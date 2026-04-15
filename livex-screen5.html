@@ -74,6 +74,19 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
 .new-order-btn { width: 100%; background: #0f172a; color: #fff; border: none; border-radius: 16px; padding: 18px; font-size: 16px; font-weight: 700; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 6px 24px rgba(20,50,168,0.3); transition: all 0.2s; }
 .new-order-btn:active { transform: scale(0.98); opacity: 0.9; }
 .share-btn { display: block; text-align: center; margin-top: 12px; font-size: 13px; color: #9AA5BF; font-weight: 500; cursor: pointer; padding: 6px; }
+
+/* PHOTO LIVRAISON */
+.delivery-photo-card {
+  background:#fff; border-radius:20px; overflow:hidden;
+  margin-bottom:14px; box-shadow:0 2px 16px rgba(15,23,42,0.08);
+  border:1px solid rgba(15,23,42,0.06);
+  animation:slideUp 0.4s ease 0.95s both;
+}
+.delivery-photo-hd { padding:14px 18px 10px; display:flex; align-items:center; gap:8px; }
+.delivery-photo-hd-ic { width:28px; height:28px; border-radius:8px; background:#ecfdf5; display:flex; align-items:center; justify-content:center; }
+.delivery-photo-title { font-size:14px; font-weight:700; color:#0f172a; }
+.delivery-photo-img { width:100%; max-height:220px; object-fit:cover; display:block; }
+
 </style>
 </head>
 <body>
@@ -215,7 +228,7 @@ window.addEventListener('load', () => {
 });
 
 async function loadOrder() {
-  const { data } = await sb.from('commandes').select('*').eq('order_id', orderId).single();
+  const { data } = await sb.from('commandes').select('*,delivery_photo').eq('order_id', orderId).single();
   if (!data) return;
 
   const storeName = data.store || 'H&M';
@@ -236,7 +249,7 @@ async function loadOrder() {
 
   // Vérifier si déjà delivered
   if (data.status === 'delivered') {
-    markDelivered();
+    markDelivered(data?.delivery_photo || null);
   }
 }
 
@@ -245,11 +258,11 @@ async function pollDelivered() {
   const { data } = await sb.from('commandes').select('status').eq('order_id', orderId).single();
   if (data?.status === 'delivered') {
     clearInterval(pollInterval);
-    markDelivered();
+    markDelivered(data?.delivery_photo || null);
   }
 }
 
-function markDelivered() {
+function markDelivered(photo) {
   // Sauvegarder dans l'historique des commandes
   if (orderId) {
     const history = JSON.parse(localStorage.getItem('livex_order_history') || '[]');
@@ -257,6 +270,10 @@ function markDelivered() {
       history.unshift(orderId);
       localStorage.setItem('livex_order_history', JSON.stringify(history.slice(0, 50)));
     }
+  }
+  // Afficher la photo de livraison si disponible
+  if (photo) {
+    showDeliveryPhoto(photo);
   }
   // Mettre à jour le tracking — étape 4 done, étape 5 done
   const step4dot = document.getElementById('step4dot');
@@ -293,6 +310,25 @@ function rate(n) {
   if (orderId) {
     sb.from('commandes').update({ rating: n }).eq('order_id', orderId);
   }
+}
+
+function showDeliveryPhoto(photo) {
+  // Créer et insérer la card photo avant rate-card
+  const rateCard = document.querySelector('.rate-card');
+  if (!rateCard || !photo) return;
+  
+  const photoCard = document.createElement('div');
+  photoCard.className = 'delivery-photo-card';
+  photoCard.innerHTML = `
+    <div class="delivery-photo-hd">
+      <div class="delivery-photo-hd-ic">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      </div>
+      <div class="delivery-photo-title">Photo de livraison</div>
+    </div>
+    <img class="delivery-photo-img" src="${photo}" alt="Livraison confirmée">
+  `;
+  rateCard.parentNode.insertBefore(photoCard, rateCard);
 }
 
 function newOrder() {
