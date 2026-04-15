@@ -853,7 +853,7 @@ function buildTotalHTML(articles, livraison, commission, total, nb) {
 }
 
 
-// Détection de prix depuis URL + analyse IA
+// Détection de prix depuis URL — Claude analyse la page
 let priceDetectTimers = {};
 function detectPrice(id) {
   const url = document.getElementById('urlInp'+id)?.value.trim();
@@ -861,60 +861,73 @@ function detectPrice(id) {
   if (!tag) return;
   if (!url || !url.startsWith('http')) { tag.style.display = 'none'; return; }
   
-  // Debounce 1.5s
   clearTimeout(priceDetectTimers[id]);
-  priceDetectTimers[id] = setTimeout(async () => {
-    tag.style.display = 'block';
-    tag.style.color = '#94a3b8';
-    tag.textContent = 'Recherche du prix...';
-    try {
-      // Utiliser Open Graph / meta price depuis l'URL
-      // On passe par un proxy CORS pour lire la page
-      // Utiliser le site suisse si possible
-      let fetchUrl = url;
-      if (url.includes('zara.com') && !url.includes('/ch/')) {
-        fetchUrl = url.replace('zara.com', 'zara.com/ch/fr');
-      } else if (url.includes('hm.com') && !url.includes('fr_ch')) {
-        fetchUrl = url.replace('hm.com', 'hm.com').replace('/fr_', '/fr_ch');
-      }
-      const proxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(fetchUrl);
-      const resp = await fetch(proxy);
-      const html = await resp.text();
-      
-      // Chercher le prix dans les meta tags standards
-      const patterns = [
-        /og:price:amount.*?content="([0-9.,]+)"/i,
-        /product:price:amount.*?content="([0-9.,]+)"/i,
-        /"price"[^>]*>\s*(?:CHF|Fr\.?|€|\$)?\s*([0-9][0-9.,]+)/i,
-        /itemprop="price"[^>]*content="([0-9.,]+)"/i,
-        /class="[^"]*price[^"]*"[^>]*>\s*(?:CHF|Fr\.?|€|\$)?\s*([0-9][0-9.,]+)/i,
-      ];
-      
-      let price = null;
-      for (const p of patterns) {
-        const match = html.match(p);
-        if (match && match[1]) { price = match[1]; break; }
-      }
-      
-      if (price) {
-        tag.style.display = 'block';
-        tag.style.color = '#059669';
-        const priceNum = parseFloat(price.replace(',','.'));
-        tag.textContent = '💰 CHF ' + priceNum.toFixed(2);
-        // Sauvegarder le prix dans l'item
-        document.getElementById('urlInp'+id).dataset.price = price;
-        prixParArticle['url_'+id] = priceNum;
-        updateTotal();
-      } else {
-        tag.style.color = '#94a3b8';
-        tag.textContent = 'Prix non trouvé automatiquement';
-        setTimeout(() => { if(tag) tag.style.display = 'none'; }, 2000);
-      }
-    } catch(e) {
-      tag.style.display = 'none';
-    }
-  }, 1500);
+  priceDetectTimers[id] = setTimeout(() => extractPriceFromUrl(id, url), 1000);
 }
+
+async function extractPriceFromUrl(id, url) {
+  const tag = document.getElementById('priceTag'+id);
+  if (!tag) return;
+  
+  tag.style.display = 'block';
+  tag.style.color = '#94a3b8';
+  tag.textContent = 'Analyse du produit...';
+  
+  const store = localStorage.getItem('livex_store') || '';
+  
+  try {
+    // Récupérer le contenu de la page via proxy
+    const proxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+    const resp = await fetch(proxy);
+    const html = await resp.text();
+    
+    // Extraire seulement les 3000 premiers chars pertinents (title + meta + prix)
+    const headSection = html.substring(0, 5000);
+    
+    // Envoyer à Claude pour extraction précise du prix CHF
+    const aiResp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 150,
+        messages: [{
+          role: 'user',
+          content: ("Voici du HTML d'une page produit de la boutique " + store + " (site suisse). Extrais le nom exact et le prix en CHF suisse. Reponds en JSON: {\"nom\": \"...\", \"prix\": \"CHF XX.XX\", \"reference\": \"...\"} ou null. HTML: " + headSection.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").substring(0, 2000))
+        }]
+      })
+    });
+    
+    const aiData = await aiResp.json();
+    let result = {};
+    try { result = JSON.parse(aiData.content?.[0]?.text?.trim() || 'null') || {}; } catch(e) {}
+    
+    if (result && result.prix) {
+      const priceNum = parseFloat(result.prix.replace('CHF','').replace(',','.').trim());
+      tag.style.display = 'block';
+      tag.style.color = '#059669';
+      tag.textContent = '💰 ' + result.prix;
+      document.getElementById('urlInp'+id).dataset.price = result.prix;
+      document.getElementById('urlInp'+id).dataset.nom = result.nom || '';
+      prixParArticle['url_'+id] = priceNum;
+      
+      // Auto-remplir le champ texte si vide
+      const artInp = document.getElementById(id);
+      if (artInp && !artInp.value.trim() && result.nom) {
+        artInp.value = result.nom;
+        onChange();
+      }
+      updateTotal();
+    } else {
+      tag.style.color = '#94a3b8';
+      tag.textContent = 'Prix non trouvé';
+      setTimeout(() => { tag.style.display = 'none'; }, 2000);
+    }
+  } catch(e) {
+    tag.style.display = 'none';
+  }
+}
+
 
 async function validateOrderWithAI(items) {
   // Vérification locale rapide d'abord (sans IA)
