@@ -231,6 +231,10 @@ const STORES = {
 
 window.addEventListener('load', () => {
   addArt(); addArt();
+  // Pré-remplir l'adresse depuis le profil
+  const savedAddr = localStorage.getItem('livex_prefill_addr') || localStorage.getItem('livex_user_addr') || '';
+  if (savedAddr) { const inp = document.getElementById('addrInp'); if(inp) { inp.value = savedAddr; } }
+  localStorage.removeItem('livex_prefill_addr');
   const name = localStorage.getItem('livex_store') || 'H&M';
   const s = STORES[name] || STORES['H&M'];
   ['pillIc','mIc'].forEach(id => {
