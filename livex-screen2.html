@@ -105,6 +105,15 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
 .cta.on { background: #0f172a; color: #fff; box-shadow: 0 6px 24px rgba(20,50,168,0.35); }
 .cta.on:active { transform: scale(0.98); }
 @keyframes slideUp { from { opacity:0; transform:translateX(-50%) translateY(10px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+.search-result-item { display:flex; align-items:center; gap:10px; padding:10px 12px; cursor:pointer; border-bottom:1px solid #f1f5f9; transition:background 0.1s; }
+.search-result-item:last-child { border-bottom:none; }
+.search-result-item:hover { background:#f8fafc; }
+.search-result-img { width:48px; height:48px; border-radius:8px; object-fit:cover; flex-shrink:0; background:#f1f5f9; }
+.search-result-info { flex:1; min-width:0; }
+.search-result-name { font-size:13px; font-weight:600; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.search-result-price { font-size:12px; font-weight:700; color:#059669; margin-top:2px; }
+.search-result-ref { font-size:11px; color:#94a3b8; margin-top:1px; }
 
 /* MODAL */
 .overlay { position: fixed; inset: 0; background: rgba(10,30,80,0.5); z-index: 100; display: flex; align-items: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(6px); }
@@ -402,14 +411,13 @@ function addArt() {
       placeholder="Ex: T-shirt blanc · Taille M · Coupe slim..." 
       oninput="onChange()"/>
 
-    <!-- Lien URL obligatoire -->
+    <!-- Lien URL de l'article -->
     <div class="art-url-wrap" id="urlWrap${id}">
       <div class="art-url-row">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
         <input type="url" class="art-url-inp" id="urlInp${id}" 
-          placeholder="Lien du site (zara.com, hm.com, globus.ch...)" 
-          oninput="onChange(); validateUrl('${id}'); detectPrice('${id}')"/>
-        <div id="urlErr${id}" style="display:none;font-size:11px;color:#ef4444;margin-top:3px;padding:2px 4px;"></div>
+          placeholder="Colle le lien de l'article (hm.com, zara.com...)" 
+          oninput="onChange(); detectPrice('${id}')"/>
       </div>
       <div id="priceTag${id}" style="display:none;font-size:11px;font-weight:700;color:#059669;padding:4px 10px;background:#ecfdf5;border-radius:20px;width:fit-content;margin-top:4px;"></div>
     </div>`;
@@ -430,6 +438,216 @@ function fillHint(id, text) {
   inp.focus();
   // Placer le curseur à la fin
   inp.setSelectionRange(inp.value.length, inp.value.length);
+  onChange();
+}
+
+// ═══════════════════════════════════════
+// RECHERCHE D'ARTICLE EN TEMPS RÉEL
+// ═══════════════════════════════════════
+let searchTimers = {};
+
+// Mapping boutique → API de recherche suisse
+const STORE_SEARCH_CONFIG = {
+  'H&M':      { api: 'hm', domain: 'https://www2.hm.com/fr_ch' },
+  'Zara':     { api: 'zara', domain: 'https://www.zara.com/ch/fr' },
+  'Globus':   { api: 'globus', domain: 'https://www.globus.ch/fr' },
+  'Manor':    { api: 'manor', domain: 'https://www.manor.ch/fr' },
+  'Bongénie': { api: 'bongenie', domain: 'https://www.bongeniegrieder.ch/fr' },
+};
+
+async function onSearchInput(id) {
+  const query = document.getElementById('searchInp'+id)?.value.trim() || '';
+  const results = document.getElementById('searchResults'+id);
+  const spinner = document.getElementById('searchSpinner'+id);
+  
+  onChange();
+  
+  if (query.length < 2) {
+    if (results) results.style.display = 'none';
+    return;
+  }
+  
+  clearTimeout(searchTimers[id]);
+  searchTimers[id] = setTimeout(() => searchArticle(id, query), 600);
+}
+
+async function searchArticle(id, query) {
+  const results = document.getElementById('searchResults'+id);
+  const spinner = document.getElementById('searchSpinner'+id);
+  const store = localStorage.getItem('livex_store') || 'H&M';
+  
+  if (spinner) spinner.style.display = 'block';
+  if (results) results.style.display = 'none';
+
+  // URLs de recherche réelles par boutique (sites suisses)
+  const SEARCH_URLS = {
+    'H&M':      'https://www2.hm.com/fr_ch/search-results.html?q=' + encodeURIComponent(query),
+    'Zara':     'https://www.zara.com/ch/fr/search?searchTerm=' + encodeURIComponent(query),
+    'Globus':   'https://www.globus.ch/fr/search?q=' + encodeURIComponent(query),
+    'Manor':    'https://www.manor.ch/fr/search?query=' + encodeURIComponent(query),
+    'Bongénie': 'https://www.bongeniegrieder.ch/fr/search?q=' + encodeURIComponent(query),
+  };
+
+  const searchUrl = SEARCH_URLS[store] || SEARCH_URLS['H&M'];
+  
+  try {
+    // Récupérer la page de recherche via proxy
+    const proxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(searchUrl);
+    const resp = await fetch(proxy);
+    const html = await resp.text();
+    
+    // Extraire les produits depuis JSON-LD ou les balises HTML
+    let items = [];
+    
+    // Méthode 1: JSON-LD (le plus fiable)
+    const jsonLdBlocks = html.match(/<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi) || [];
+    for (const block of jsonLdBlocks) {
+      try {
+        const json = JSON.parse(block.replace(/<[^>]*>/g, ''));
+        const products = json['@type'] === 'ItemList' ? (json.itemListElement || []) : 
+                        Array.isArray(json) ? json : [json];
+        for (const p of products.slice(0, 5)) {
+          const product = p.item || p;
+          if (product.name && product.offers) {
+            const offer = Array.isArray(product.offers) ? product.offers[0] : product.offers;
+            const price = offer?.price || offer?.Price;
+            if (price) {
+              items.push({
+                nom: product.name,
+                prix: 'CHF ' + parseFloat(price).toFixed(2),
+                url: product.url || searchUrl,
+                image: product.image?.[0] || product.image || ''
+              });
+            }
+          }
+        }
+      } catch(e) {}
+    }
+    
+    // Méthode 2: Si JSON-LD vide, utiliser Claude pour analyser le HTML
+    if (!items.length) {
+      const textContent = html.replace(/<script[\s\S]*?<\/script>/gi, '')
+                              .replace(/<style[\s\S]*?<\/style>/gi, '')
+                              .replace(/<[^>]+>/g, ' ')
+                              .replace(/\s+/g, ' ')
+                              .substring(0, 3000);
+      
+      const aiResp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 400,
+          messages: [{
+            role: 'user',
+            content: 'Voici le texte de la page de recherche "' + query + '" sur ' + store + ' en Suisse. Extrais les 3 premiers produits avec leur prix CHF. JSON uniquement: [{"nom":"...","prix":"CHF XX.XX","url":"..."}]. Texte: ' + textContent
+          }]
+        })
+      });
+      const aiData = await aiResp.json();
+      try { items = JSON.parse(aiData.content?.[0]?.text?.trim() || '[]'); } catch(e) {}
+    }
+
+    if (spinner) spinner.style.display = 'none';
+
+    if (!items.length) {
+      if (results) {
+        results.style.display = 'block';
+        results.innerHTML = '<div style="padding:14px 16px;font-size:13px;color:#94a3b8;text-align:center;">Aucun article trouvé. Essaie avec des mots plus précis.</div>';
+      }
+      return;
+    }
+
+    if (results) {
+      results.style.display = 'block';
+      results.innerHTML = buildSearchResults(id, items.slice(0,4));
+    }
+  } catch(e) {
+    if (spinner) spinner.style.display = 'none';
+    if (results) {
+      results.style.display = 'block';
+      results.innerHTML = '<div style="padding:14px 16px;font-size:13px;color:#94a3b8;text-align:center;">Erreur de recherche. Essaie de nouveau.</div>';
+    }
+  }
+}
+
+function selectArticle(id, item) {
+  // Cacher résultats
+  const results = document.getElementById('searchResults'+id);
+  if (results) results.style.display = 'none';
+  
+  // Afficher l'article sélectionné
+  const selectedDiv = document.getElementById('selectedItem'+id);
+  const selectedName = document.getElementById('selectedName'+id);
+  const selectedPrice = document.getElementById('selectedPrice'+id);
+  
+  if (selectedDiv) {
+    selectedDiv.style.display = 'flex';
+    if (selectedName) selectedName.textContent = item.nom;
+    if (selectedPrice) selectedPrice.textContent = item.prix || '';
+  }
+  
+  // Remplir les champs cachés
+  const artInp = document.getElementById(id);
+  if (artInp) artInp.value = item.nom;
+  
+  const urlInp = document.getElementById('urlInp'+id);
+  if (urlInp) {
+    urlInp.value = item.url || '';
+    urlInp.dataset.price = item.prix || '';
+  }
+  
+  // Sauvegarder le prix pour le total
+  if (item.prix) {
+    const priceNum = parseFloat(item.prix.replace('CHF','').replace(',','.').trim());
+    if (!isNaN(priceNum)) prixParArticle[id] = priceNum;
+  }
+  
+  // Mettre à jour le champ texte
+  if (artInp) artInp.value = item.nom;
+  
+  // Vider la recherche
+  const searchInp = document.getElementById('searchInp'+id);
+  if (searchInp) searchInp.value = item.nom;
+  
+  updateTotal();
+  onChange();
+}
+
+function buildSearchResults(id, items) {
+  return items.map(function(item) {
+    var data = encodeURIComponent(JSON.stringify(item));
+    return '<div class="search-result-item" onclick="selectArticleFromEncoded(\''+id+'\', \''+data+'\')">'+
+      '<div class="search-result-img" style="background:#f1f5f9;display:flex;align-items:center;justify-content:center;">'+
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div>'+
+      '<div class="search-result-info">'+
+      '<div class="search-result-name">'+item.nom+'</div>'+
+      '<div class="search-result-price">'+(item.prix||'Prix non disponible')+'</div>'+
+      '</div>'+
+      '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>'+
+      '</div>';
+  }).join('');
+}
+
+function selectArticleFromEncoded(id, encoded) {
+  try { selectArticle(id, JSON.parse(decodeURIComponent(encoded))); } catch(e) {}
+}
+
+function clearSelected(id) {
+  const selectedDiv = document.getElementById('selectedItem'+id);
+  if (selectedDiv) selectedDiv.style.display = 'none';
+  
+  const searchInp = document.getElementById('searchInp'+id);
+  if (searchInp) searchInp.value = '';
+  
+  const urlInp = document.getElementById('urlInp'+id);
+  if (urlInp) { urlInp.value = ''; urlInp.dataset.price = ''; }
+  
+  const artInp = document.getElementById(id);
+  if (artInp) artInp.value = '';
+  
+  delete prixParArticle[id];
+  updateTotal();
   onChange();
 }
 
@@ -611,9 +829,9 @@ function isValidOrder() {
   const items = getItems();
   if (!items.length) return false;
   // Au moins 1 article avec du contenu (texte OU photo OU lien)
-  // Chaque article doit avoir un nom ET une URL
+  // Nom ET URL obligatoires
   const validItems = items.filter(i => 
-    i.name && i.name.length >= 3 && 
+    i.name && i.name.length >= 2 && 
     i.url && i.url.startsWith('http')
   );
   return validItems.length > 0;
@@ -934,4 +1152,105 @@ async function doConfirm() {
 
 </script>
 </body>
-</html>
+</htmlasync function extractPriceFromUrl(id, url) {
+  const tag = document.getElementById('priceTag'+id);
+  if (!tag) return;
+  tag.style.display = 'block';
+  tag.style.color = '#94a3b8';
+  tag.textContent = 'Recherche du prix...';
+  
+  try {
+    // Forcer la version suisse de l'URL
+    let chUrl = url;
+    if (url.includes('hm.com') && !url.includes('/fr_ch')) {
+      chUrl = url.replace(/hm\.com\/[a-z_-]+\//, 'hm.com/fr_ch/');
+    }
+    if (url.includes('zara.com') && !url.includes('/ch/')) {
+      chUrl = url.replace('zara.com/', 'zara.com/ch/fr/');
+    }
+    
+    const proxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(chUrl);
+    const resp = await fetch(proxy);
+    const html = await resp.text();
+    
+    // Méthode 1 : JSON-LD (données structurées — source la plus fiable)
+    const jsonLdMatches = html.match(/<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi) || [];
+    for (const block of jsonLdMatches) {
+      try {
+        const json = JSON.parse(block.replace(/<script[^>]*>|<\/script>/gi, ''));
+        const items = Array.isArray(json) ? json : [json];
+        for (const item of items) {
+          const offers = item.offers || item.Offers;
+          if (offers) {
+            const offerList = Array.isArray(offers) ? offers : [offers];
+            for (const offer of offerList) {
+              const price = offer.price || offer.Price;
+              const currency = offer.priceCurrency || offer.PriceCurrency || '';
+              if (price && (currency === 'CHF' || chUrl.includes('.ch') || chUrl.includes('fr_ch'))) {
+                const priceStr = 'CHF ' + parseFloat(price).toFixed(2);
+                tag.style.color = '#059669';
+                tag.textContent = '💰 ' + priceStr;
+                document.getElementById('urlInp'+id).dataset.price = priceStr;
+                prixParArticle['url_'+id] = parseFloat(price);
+                // Auto-remplir nom si vide
+                const artName = item.name || '';
+                const artInp = document.getElementById(id);
+                if (artInp && !artInp.value.trim() && artName) {
+                  artInp.value = artName.substring(0, 60);
+                  onChange();
+                }
+                updateTotal();
+                return;
+              }
+            }
+          }
+        }
+      } catch(e) {}
+    }
+    
+    // Méthode 2 : Meta tags Open Graph price
+    const ogPrice = html.match(/<meta[^>]+property="product:price:amount"[^>]+content="([0-9.,]+)"/i) ||
+                    html.match(/<meta[^>]+content="([0-9.,]+)"[^>]+property="product:price:amount"/i);
+    if (ogPrice) {
+      const priceStr = 'CHF ' + parseFloat(ogPrice[1].replace(',','.')).toFixed(2);
+      tag.style.color = '#059669';
+      tag.textContent = '💰 ' + priceStr;
+      document.getElementById('urlInp'+id).dataset.price = priceStr;
+      prixParArticle['url_'+id] = parseFloat(ogPrice[1].replace(',','.'));
+      updateTotal();
+      return;
+    }
+    
+    // Méthode 3 : Chercher CHF dans le HTML (uniquement francs suisses)
+    const chfMatches = html.match(/CHF\s*([0-9]+[.,][0-9]{2})/g) || 
+                       html.match(/Fr\.\s*([0-9]+[.,][0-9]{2})/g) || [];
+    const prices = chfMatches
+      .map(m => parseFloat(m.replace(/[^0-9.,]/g,'').replace(',','.')))
+      .filter(p => p > 1 && p < 5000);
+    
+    if (prices.length > 0) {
+      // Prendre le prix le plus commun (évite les prix de livraison etc)
+      const freq = {};
+      prices.forEach(p => freq[p] = (freq[p]||0)+1);
+      const mostCommon = Object.entries(freq).sort((a,b)=>b[1]-a[1])[0];
+      const price = parseFloat(mostCommon[0]);
+      const priceStr = 'CHF ' + price.toFixed(2);
+      tag.style.color = '#059669';
+      tag.textContent = '💰 ' + priceStr;
+      document.getElementById('urlInp'+id).dataset.price = priceStr;
+      prixParArticle['url_'+id] = price;
+      updateTotal();
+      return;
+    }
+    
+    // Rien trouvé
+    tag.style.color = '#94a3b8';
+    tag.textContent = 'Prix non détecté';
+    setTimeout(() => { tag.style.display = 'none'; }, 2000);
+    
+  } catch(e) {
+    tag.style.display = 'none';
+  }
+}
+
+>
