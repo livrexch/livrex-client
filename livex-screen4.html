@@ -259,7 +259,13 @@ function startTimer() {
   }, 1000);
 }
 
-function openPayment() { if (totalSeconds > 0) document.getElementById('overlay').classList.add('on'); }
+function openPayment() { 
+  if (totalSeconds <= 0) {
+    alert('Le délai de paiement est expiré.');
+    return;
+  }
+  document.getElementById('overlay').classList.add('on'); 
+}
 function closeModal() { document.getElementById('overlay').classList.remove('on'); }
 function closeOut(e) { if (e.target === document.getElementById('overlay')) closeModal(); }
 
