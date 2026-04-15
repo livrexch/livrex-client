@@ -49,9 +49,11 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
 
 /* Boutons photo + URL */
 .art-options { display: flex; gap: 8px; }
-.art-opt-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 9px; border-radius: 10px; border: 1.5px dashed #D0D8F0; background: transparent; font-size: 12px; font-weight: 600; color: #9AA5BF; cursor: pointer; font-family: inherit; transition: all 0.15s; }
-.art-opt-btn:active { transform: scale(0.97); }
-.art-opt-btn.has-content { border-color: #0f172a; background: #EEF2FF; color: #0f172a; border-style: solid; }
+.art-url-wrap { margin-bottom: 4px; }
+.art-url-row { display: flex; align-items: center; gap: 8px; background: #f8fafc; border: 1.5px solid #E8EDF5; border-radius: 12px; padding: 10px 12px; transition: border-color 0.15s; }
+.art-url-row:focus-within { border-color: #0f172a; background: #fff; }
+.art-url-inp { flex: 1; background: transparent; border: none; outline: none; font-size: 13px; color: #0f172a; font-family: inherit; caret-color: #0f172a; }
+.art-url-inp::placeholder { color: #C8D0E8; }
 
 /* Prévisualisation photo */
 .art-photo-preview { position: relative; margin-top: 8px; border-radius: 12px; overflow: hidden; }
@@ -151,7 +153,7 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
   </div>
   <div class="hdr">
     <div class="hdr-h">Ta commande<br><span>dis-nous tout</span></div>
-    <div class="hdr-sub">Texte, photo ou lien — on trouve ton article.</div>
+    <div class="hdr-sub">Colle le lien de chaque article — on s'occupe du reste.</div>
   </div>
   <div class="scroll">
     <div class="sec">
@@ -402,30 +404,15 @@ function addArt() {
     <div class="art-hints">
       <span onclick="fillHint('${id}', 'Ref: ')">+ Ajouter une référence</span>
     </div>
-    <div class="art-options">
-      <button class="art-opt-btn" id="photoBtn${id}" onclick="triggerPhoto('${id}')">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-        Ajouter une photo
-      </button>
-      <button class="art-opt-btn" id="urlBtn${id}" onclick="toggleUrl('${id}')">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-        Ajouter un lien
-      </button>
-    </div>
-    <div id="photoPreview${id}" style="display:none;" class="art-photo-preview">
-      <img id="photoImg${id}" src="" alt="photo">
-      <button class="art-photo-del" onclick="removePhoto('${id}')">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-      </button>
-      <div id="photoPriceTag${id}" style="display:none;position:absolute;bottom:8px;left:8px;background:rgba(5,150,105,0.92);color:white;font-size:12px;font-weight:700;border-radius:20px;padding:4px 10px;"></div>
-    </div>
-    <div id="urlPreview${id}" style="display:none;" class="art-url-preview">
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9AA5BF" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-      <input type="url" id="urlInp${id}" placeholder="https://www.hm.com/produit..." oninput="onChange(); detectPrice('${id}')">
-      <div id="priceTag${id}" style="display:none;font-size:11px;font-weight:700;color:#059669;margin-top:4px;padding:3px 8px;background:#ecfdf5;border-radius:20px;width:fit-content;">Prix détecté...</div>
-      <button class="art-url-close" onclick="removeUrl('${id}')">
-        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#9AA5BF" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-      </button>
+    <!-- Lien URL obligatoire -->
+    <div class="art-url-wrap" id="urlWrap${id}">
+      <div class="art-url-row">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        <input type="url" class="art-url-inp" id="urlInp${id}" 
+          placeholder="Lien vers l'article (obligatoire)..." 
+          oninput="onChange(); detectPrice('${id}')"/>
+      </div>
+      <div id="priceTag${id}" style="display:none;font-size:11px;font-weight:700;color:#059669;padding:4px 10px;background:#ecfdf5;border-radius:20px;width:fit-content;margin-top:4px;"></div>
     </div>`;
   document.getElementById('artList').appendChild(card);
   onChange();
@@ -578,15 +565,12 @@ function getItems() {
       }
     }
     
-    const cleanPhoto = photo.startsWith('http') ? photo : (photo.startsWith('data:') ? photo : '');
-    if (!name && !cleanPhoto && !url) return null;
-    
+    if (!name && !url) return null;
     return {
       id: arts.indexOf(id),
-      name: name || '(voir photo)',
-      photo: cleanPhoto,
+      name: name || '(voir lien)',
       url: url,
-      price: photoEl?.dataset?.price || document.getElementById('urlInp'+id)?.dataset?.price || null,
+      price: document.getElementById('urlInp'+id)?.dataset?.price || null,
       status: 'pending'
     };
   }).filter(Boolean);
@@ -596,11 +580,8 @@ function isValidOrder() {
   const items = getItems();
   if (!items.length) return false;
   // Au moins 1 article avec du contenu (texte OU photo OU lien)
-  const validItems = items.filter(i => 
-    (i.name && i.name.length >= 2 && i.name !== 'Article sans description') || 
-    (i.photo && i.photo.length > 10) || 
-    (i.url && i.url.startsWith('http'))
-  );
+  // Au moins 1 article avec URL obligatoire
+  const validItems = items.filter(i => i.url && i.url.startsWith('http'));
   return validItems.length > 0;
   // L'adresse est verifiee au moment de l'envoi
 }
