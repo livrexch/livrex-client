@@ -4,272 +4,197 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>LIVREX — Coursier</title>
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>LIVREX — Confirmé</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; background: #F5F7FF; color: #0A0A0A; overflow: hidden; }
-.screen { display: none; position: fixed; inset: 0; flex-direction: column; background: #F5F7FF; overflow: hidden; }
-.screen.active { display: flex; }
+#app { position: fixed; inset: 0; display: flex; flex-direction: column; background: #F5F7FF; overflow: hidden; opacity: 0; animation: fadeIn 0.5s ease 0.1s forwards; }
+@keyframes fadeIn { to { opacity: 1; } }
 .sbar { background: #0f172a; padding: 14px 24px 8px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
 .sbar-t { font-size: 15px; font-weight: 600; color: #fff; }
-.scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.sbar-r { display: flex; gap: 5px; align-items: center; }
+.hdr { background: #0f172a; padding: 10px 24px 32px; border-radius: 0 0 32px 32px; flex-shrink: 0; text-align: center; }
+.hdr-brand { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 24px; }
+.hdr-icon { width: 34px; height: 34px; border-radius: 9px; background: #fff; display: flex; align-items: center; justify-content: center; }
+.hdr-name { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: 3px; }
+.success-wrap { display: flex; flex-direction: column; align-items: center; }
+.checkmark-circle { width: 72px; height: 72px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; margin-bottom: 16px; animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.3s both; }
+@keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.checkmark-inner { width: 52px; height: 52px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; }
+.hdr-title { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 6px; letter-spacing: -0.3px; animation: slideUp 0.4s ease 0.5s both; }
+.hdr-sub { font-size: 14px; color: rgba(255,255,255,0.65); line-height: 1.5; animation: slideUp 0.4s ease 0.6s both; }
+@keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.scroll { flex: 1; overflow-y: auto; padding: 20px 20px 0; -webkit-overflow-scrolling: touch; }
 .scroll::-webkit-scrollbar { display: none; }
-.card { background: #fff; border-radius: 20px; box-shadow: 0 2px 16px rgba(20,50,168,0.06); border: 1px solid rgba(20,50,168,0.06); overflow: hidden; }
-.btn { width: 100%; border: none; border-radius: 16px; padding: 17px; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.18s; }
-.btn-blue { background: #0f172a; color: #fff; box-shadow: 0 6px 20px rgba(20,50,168,0.3); }
-.btn-blue:active { opacity: 0.88; }
-.btn-outline { background: transparent; border: 1.5px solid #E0E8FF; color: #9AA5BF; }
-.btn-green { background: #ECFDF5; color: #059669; border: 1.5px solid #A7F3D0; }
-.row { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-bottom: 1px solid #F5F7FF; }
-.row:last-child { border-bottom: none; }
-.badge { font-size: 11px; font-weight: 700; border-radius: 20px; padding: 3px 10px; }
-.badge-green { background: #ECFDF5; color: #059669; }
-.badge-red { background: #FEF2F2; color: #DC2626; }
-.badge-blue { background: #EEF2FF; color: #0f172a; }
-.btm-fixed { background: #fff; border-top: 1px solid #EEF2FF; padding: 14px 20px 38px; flex-shrink: 0; box-shadow: 0 -4px 20px rgba(20,50,168,0.06); }
-/* SCREEN 1 */
-#s1 .hdr { background: #0f172a; padding: 8px 24px 24px; border-radius: 0 0 28px 28px; flex-shrink: 0; }
-.brand { display: flex; align-items: center; gap: 9px; }
-.brand-ic { width: 32px; height: 32px; border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: center; }
-.brand-name { font-size: 17px; font-weight: 800; color: #fff; letter-spacing: 3px; }
-.earn-strip { display: flex; gap: 10px; margin: 16px 20px 0; flex-shrink: 0; }
-.earn-card { flex: 1; background: #fff; border-radius: 16px; padding: 14px 16px; box-shadow: 0 2px 12px rgba(20,50,168,0.07); border: 1px solid rgba(20,50,168,0.06); }
-.earn-lbl { font-size: 10px; font-weight: 700; color: #9AA5BF; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
-.earn-val { font-size: 20px; font-weight: 800; color: #0A0A0A; }
-.status-toggle { margin: 16px 20px 0; background: #fff; border-radius: 18px; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 12px rgba(20,50,168,0.07); border: 1px solid rgba(20,50,168,0.06); flex-shrink: 0; }
-.s-dot { width: 10px; height: 10px; border-radius: 50%; background: #4ADE80; }
-.toggle { width: 50px; height: 28px; border-radius: 14px; background: #4ADE80; border: none; cursor: pointer; position: relative; transition: background 0.3s; flex-shrink: 0; }
-.toggle.off { background: #E5E7EB; }
-.toggle-thumb { width: 22px; height: 22px; border-radius: 50%; background: #fff; position: absolute; top: 3px; left: 25px; transition: left 0.3s; box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
-.toggle.off .toggle-thumb { left: 3px; }
-.order-alert { margin: 16px 20px 0; background: #0f172a; border-radius: 20px; padding: 16px 18px; display: flex; align-items: center; gap: 14px; cursor: pointer; box-shadow: 0 6px 24px rgba(20,50,168,0.3); flex-shrink: 0; animation: alertBounce 0.5s cubic-bezier(0.34,1.56,0.64,1); }
-@keyframes alertBounce { from{transform:translateY(-10px);opacity:0} to{transform:translateY(0);opacity:1} }
-.order-alert.hidden { display: none; }
-.alert-ic { width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.alert-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 3px; }
-.alert-sub { font-size: 12px; color: rgba(255,255,255,0.7); }
-.no-order { margin: 16px 20px 0; background: #fff; border-radius: 20px; padding: 28px 20px; text-align: center; box-shadow: 0 2px 12px rgba(20,50,168,0.06); border: 1px solid rgba(20,50,168,0.06); flex-shrink: 0; }
-.refresh-sm { display: flex; align-items: center; gap: 6px; background: #EEF2FF; border: none; border-radius: 10px; padding: 9px 16px; font-size: 13px; font-weight: 600; color: #0f172a; font-family: inherit; cursor: pointer; margin: 12px auto 0; }
-/* SCREEN 3 */
-.check-card { background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 2px 16px rgba(20,50,168,0.06); border: 1px solid rgba(20,50,168,0.06); }
-.check-row { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-bottom: 1px solid #F5F7FF; cursor: pointer; user-select: none; transition: background 0.12s; }
-.check-row:last-child { border-bottom: none; }
-.check-row:active { background: #FAFBFF; }
-.check-toggle { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; border: 2px solid #E0E8FF; background: #F5F7FF; }
-.check-toggle.on { background: #0f172a; border-color: #0f172a; }
-.check-toggle.off { background: #FEF2F2; border-color: #FECACA; }
-.check-name { font-size: 15px; font-weight: 500; color: #0A0A0A; flex: 1; }
-.check-name.crossed { text-decoration: line-through; color: #9AA5BF; }
-.prog-bar { background: #EEF2FF; border-radius: 14px; padding: 12px 18px; display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-.prog-track { flex: 1; height: 6px; background: #D6E0FF; border-radius: 3px; overflow: hidden; }
-.prog-fill { height: 100%; background: #0f172a; border-radius: 3px; transition: width 0.4s ease; }
-.prog-txt { font-size: 12px; font-weight: 700; color: #0f172a; white-space: nowrap; }
-/* SCREEN 4 */
-.waiting-ring { width: 64px; height: 64px; border-radius: 50%; border: 4px solid #EEF2FF; border-top-color: #0f172a; animation: spin 1.2s linear infinite; margin: 0 auto 14px; }
-@keyframes spin { to { transform: rotate(360deg); } }
-/* SCREEN 5 */
-.earn-big { text-align: center; background: #0f172a; border-radius: 20px; padding: 20px; margin-bottom: 14px; box-shadow: 0 6px 24px rgba(20,50,168,0.25); }
-.earn-big-val { font-size: 36px; font-weight: 900; color: #fff; }
-.earn-big-lbl { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.6); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
-.earn-big-sub { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 4px; }
-.c-row { display: flex; justify-content: space-between; align-items: center; padding: 13px 18px; border-bottom: 1px solid #F5F7FF; }
-.c-row:last-child { border-bottom: none; }
-.c-l { font-size: 13px; color: #9AA5BF; }
-.c-r { font-size: 14px; font-weight: 700; color: #0A0A0A; }
-.c-r.blue { color: #0f172a; }
-.c-r.green { color: #059669; }
-.hist-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 18px; border-bottom: 1px solid #F5F7FF; }
-.hist-row:last-child { border-bottom: none; }
-.hist-store { font-size: 14px; font-weight: 600; color: #0A0A0A; }
-.hist-time { font-size: 11px; color: #9AA5BF; margin-top: 2px; }
-.hist-earn { font-size: 14px; font-weight: 700; color: #059669; }
+.eta-card { background: #fff; border-radius: 20px; padding: 18px; margin-bottom: 14px; box-shadow: 0 2px 16px rgba(20,50,168,0.08); border: 1px solid rgba(20,50,168,0.08); display: flex; align-items: center; gap: 16px; animation: slideUp 0.4s ease 0.7s both; }
+.eta-ic { width: 52px; height: 52px; border-radius: 14px; background: #EEF2FF; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.eta-body { flex: 1; }
+.eta-label { font-size: 11px; font-weight: 700; color: #9AA5BF; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px; }
+.eta-value { font-size: 22px; font-weight: 800; color: #0f172a; letter-spacing: -0.5px; }
+.eta-sub { font-size: 12px; color: #9AA5BF; margin-top: 3px; }
+.eta-live { display: flex; align-items: center; gap: 5px; background: #ECFDF5; border-radius: 20px; padding: 5px 10px; flex-shrink: 0; }
+.eta-live-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ADE80; animation: blink 1.5s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.eta-live-txt { font-size: 11px; font-weight: 700; color: #059669; }
+.tracking-card { background: #fff; border-radius: 20px; overflow: hidden; margin-bottom: 14px; box-shadow: 0 2px 16px rgba(20,50,168,0.08); border: 1px solid rgba(20,50,168,0.08); animation: slideUp 0.4s ease 0.8s both; }
+.tracking-hd { padding: 16px 18px 12px; display: flex; justify-content: space-between; align-items: center; }
+.tracking-title { font-size: 14px; font-weight: 700; color: #0A0A0A; }
+.tracking-id { font-size: 11px; font-weight: 700; color: #9AA5BF; }
+.tracking-steps { padding: 0 18px 18px; }
+.t-step { display: flex; gap: 14px; align-items: flex-start; position: relative; padding-bottom: 18px; }
+.t-step:last-child { padding-bottom: 0; }
+.t-step:not(:last-child)::after { content: ''; position: absolute; left: 13px; top: 28px; width: 2px; height: calc(100% - 10px); background: #EEF2FF; }
+.t-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; z-index: 1; }
+.t-dot.done { background: #0f172a; }
+.t-dot.now { background: #fff; border: 2px solid #0f172a; animation: nowPulse 1.5s infinite; }
+.t-dot.todo { background: #EEF2FF; }
+@keyframes nowPulse { 0%,100%{box-shadow:0 0 0 0 rgba(20,50,168,0.3)} 50%{box-shadow:0 0 0 5px rgba(20,50,168,0)} }
+.t-info { flex: 1; padding-top: 4px; }
+.t-title { font-size: 13px; font-weight: 700; color: #0A0A0A; }
+.t-title.muted { color: #B0BFDC; }
+.t-time { font-size: 11px; color: #9AA5BF; margin-top: 2px; }
+.summary-card { background: #fff; border-radius: 20px; overflow: hidden; margin-bottom: 14px; box-shadow: 0 2px 16px rgba(20,50,168,0.08); border: 1px solid rgba(20,50,168,0.08); animation: slideUp 0.4s ease 0.9s both; }
+.sum-hd { padding: 16px 18px; border-bottom: 1px solid #F5F7FF; display: flex; justify-content: space-between; }
+.sum-hd-l { font-size: 14px; font-weight: 700; color: #0A0A0A; }
+.sum-hd-r { font-size: 11px; font-weight: 700; color: #0f172a; }
+.sum-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; border-bottom: 1px solid #F8F9FF; }
+.sum-row:last-child { border-bottom: none; }
+.sum-l { font-size: 13px; color: #9AA5BF; }
+.sum-r { font-size: 13px; font-weight: 700; color: #0A0A0A; }
+.sum-r.blue { color: #0f172a; font-size: 15px; }
+.rate-card { background: #fff; border-radius: 20px; padding: 18px; margin-bottom: 14px; box-shadow: 0 2px 16px rgba(20,50,168,0.08); border: 1px solid rgba(20,50,168,0.08); animation: slideUp 0.4s ease 1s both; }
+.rate-title { font-size: 14px; font-weight: 700; color: #0A0A0A; margin-bottom: 4px; }
+.rate-sub { font-size: 12px; color: #9AA5BF; margin-bottom: 14px; }
+.stars { display: flex; gap: 8px; }
+.star { width: 44px; height: 44px; border-radius: 12px; background: #F5F7FF; border: 1.5px solid #E0E8FF; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; transition: all 0.15s; flex: 1; }
+.star.selected { background: #EEF2FF; border-color: #0f172a; transform: scale(1.05); }
+.btm { background: #fff; border-top: 1px solid #EEF2FF; padding: 14px 20px 38px; flex-shrink: 0; box-shadow: 0 -4px 20px rgba(20,50,168,0.06); animation: slideUp 0.4s ease 1.1s both; }
+.new-order-btn { width: 100%; background: #0f172a; color: #fff; border: none; border-radius: 16px; padding: 18px; font-size: 16px; font-weight: 700; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 6px 24px rgba(20,50,168,0.3); transition: all 0.2s; }
+.new-order-btn:active { transform: scale(0.98); opacity: 0.9; }
+.share-btn { display: block; text-align: center; margin-top: 12px; font-size: 13px; color: #9AA5BF; font-weight: 500; cursor: pointer; padding: 6px; }
 
-/* MODAL PHOTO LIVRAISON */
-.photo-modal-overlay { position:fixed; inset:0; background:rgba(10,20,50,0.7); z-index:200; display:flex; align-items:flex-end; opacity:0; pointer-events:none; transition:opacity 0.3s; backdrop-filter:blur(6px); }
-.photo-modal-overlay.on { opacity:1; pointer-events:all; }
-.photo-modal { background:#fff; border-radius:28px 28px 0 0; padding:22px 22px 44px; width:100%; transform:translateY(100%); transition:transform 0.38s cubic-bezier(0.32,0.72,0,1); }
-.photo-modal-overlay.on .photo-modal { transform:translateY(0); }
-.photo-modal-handle { width:36px; height:4px; background:#E0E8FF; border-radius:2px; margin:0 auto 20px; }
-.photo-modal-title { font-size:18px; font-weight:800; color:#0f172a; margin-bottom:6px; }
-.photo-modal-sub { font-size:13px; color:#64748b; margin-bottom:20px; line-height:1.5; }
-.photo-preview-wrap { position:relative; margin-bottom:16px; border-radius:16px; overflow:hidden; display:none; }
-.photo-preview-wrap img { width:100%; max-height:200px; object-fit:cover; display:block; }
-.photo-preview-del { position:absolute; top:8px; right:8px; width:28px; height:28px; border-radius:50%; background:rgba(0,0,0,0.6); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-.photo-btn-row { display:flex; gap:10px; margin-bottom:12px; }
-.photo-btn { flex:1; padding:15px; border-radius:14px; border:none; font-size:14px; font-weight:700; font-family:inherit; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; }
-.photo-btn-take { background:#0f172a; color:#fff; }
-.photo-btn-skip { background:#f1f5f9; color:#64748b; }
-.photo-confirm-btn { width:100%; padding:17px; border-radius:14px; border:none; font-size:15px; font-weight:700; font-family:inherit; cursor:pointer; background:#059669; color:#fff; display:flex; align-items:center; justify-content:center; gap:8px; }
-.photo-confirm-btn:active { opacity:0.88; }
+/* PHOTO LIVRAISON */
+.delivery-photo-card {
+  background:#fff; border-radius:20px; overflow:hidden;
+  margin-bottom:14px; box-shadow:0 2px 16px rgba(15,23,42,0.08);
+  border:1px solid rgba(15,23,42,0.06);
+  animation:slideUp 0.4s ease 0.95s both;
+}
+.delivery-photo-hd { padding:14px 18px 10px; display:flex; align-items:center; gap:8px; }
+.delivery-photo-hd-ic { width:28px; height:28px; border-radius:8px; background:#ecfdf5; display:flex; align-items:center; justify-content:center; }
+.delivery-photo-title { font-size:14px; font-weight:700; color:#0f172a; }
+.delivery-photo-img { width:100%; max-height:220px; object-fit:cover; display:block; }
 
 </style>
 </head>
 <body>
-
-<!-- SCREEN 1 — DASHBOARD -->
-<div class="screen active" id="s1">
- <div class="sbar"><span class="sbar-t" id="clk1">9:41</span></div>
- <div class="hdr">
- <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
- <div class="brand">
- <div class="brand-ic" style="overflow:hidden;border-radius:8px;"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAIAAAABc2X6AAABCGlDQ1BJQ0MgUHJvZmlsZQAAeJxjYGA8wQAELAYMDLl5JUVB7k4KEZFRCuwPGBiBEAwSk4sLGHADoKpv1yBqL+viUYcLcKakFicD6Q9ArFIEtBxopAiQLZIOYWuA2EkQtg2IXV5SUAJkB4DYRSFBzkB2CpCtkY7ETkJiJxcUgdT3ANk2uTmlyQh3M/Ck5oUGA2kOIJZhKGYIYnBncAL5H6IkfxEDg8VXBgbmCQixpJkMDNtbGRgkbiHEVBYwMPC3MDBsO48QQ4RJQWJRIliIBYiZ0tIYGD4tZ2DgjWRgEL7AwMAVDQsIHG5TALvNnSEfCNMZchhSgSKeDHkMyQx6QJYRgwGDIYMZAKbWPz9HbOBQAAAaPklEQVR4nLVcd5gcxZV/r6q6e2Z2ZrV5tUhCOaFgkAQnYTAGBNhCBkzwYTJOpDPHx5FxwIazwBgbE0wwIGHAYCwMlkgCIxmBSMIEgwwYAcrSaqM2TOjuqnd/VHdPd0/QyvgKvmW6u7qqXv69V9WgLOSRoFJDRKLKj6t2KPOIIRBASX9CKF1D8HrwgwAAAQkIARCBqMrKAfXQAAwBIFiJCL9TusTSS0Tc7aOyHQAAVAXWAGpyyr4e/EDvD2E5rmkC9AuRS0UQkI/Aqi8xdidMEiLGLssSM5QWSHIoXb2eCGW7U8A4AiKK8QUhRHBZ+YRvVtftz9UCGQ6Na0QEgGWWEyMvoN3TDQTyCS5V5lLV/TwyLLfi+FxEVJanRVUKLyDWEz3qylq1vqmFz8quIDzNv5HO8OCxWULPgDByX8sHEPWj2AheI4qtkgLBRnsyqNCq8LvK5Z620lmQMC4lIvD+KbplIiIEYIhQ3o9gINjQ+KQJLsPmqkuschm7j9o9DpknnjcC9HyPFqlPL8Z6ejTsmWcRVdZdNjxGOhAVuV95Yh1ztH4F3TD6Wy9dxycKOiARACMv9CpERGTIEHUUjFtyee6HQh5qgisih6KHB0QgACRARKWUVIohckOAEHsgwX9Lcx3pSEWKMxb2Bdo6Kqlq4JXFUKbQ/EcAIpJSioTFGAeA/t7erds727u6u3oHBrI513WlKwmU5gx48EgvgogIkPnOFIjIxwlaPwnI14TiogkADS6EwZOJRFNdZq/hTSOHN9XU1nIAUMotFFjIHmNe1hNk1JLLEFwJLSqpuCmYSGzf1r70mRefX732g/UbO7q6sznblYqI4gZF5GmuRwoDQiACFkVW4d8BFzB45v8XSXCRTiaHN9dPmTD6yEMOOGb+gSNGtIGUbsHmnIWm9RBE2GqK1Kl8vpS20ialFKlUT3fvz+948P7Hntu+vQMYWoZhGJwzRGQAnigRgHxMp10QkQJERAaKCACZBwAp6lUpAIy+0SN62JsAAJVSpBTYjmvbNhC0tTaecuzhV37/jMbGBjeb5ZxHKYvCzN0SHF6Ppvbl19/+ziWLPvrnhlRt2jJNIlJSEamQT+AABKQ0hiNSesVaT4kBqqLGMkBgQOQrGwL5SLuYNuhMQSuHpz7IGDJkCFBwnGxf/8RJ4+658fIvzZvlZnNhOevwgCXeFKlQiESqEruXUolU8vm/vn78t68oSJlJ10iplFLg+1wiQiBihMD1wjEIgb64gmE5R0Ao5F3HdRkyyzJM03BdWSYg++IFVB4oJJ8doGdnXLDBbN4yxNK7rzvq0Hkyl+Oc67kqgjaVz2tGlI1ASilmWR9/uvnA484bzOYSCUtK6fNGa2/AJkBCHTY1D8Kz+tSy/oEckBrZ1tza3GC7cvO29q7uvtpMDURBiH43MkIUGHv8JBCC5x03k069+OgtUyaOUYUCY5EEIc7H3RAMwAxj4ZmXPr3y1fq6YY7jeLgXQOMeb1lAgMh0JEUiBcDiGI5z1rur/4tzZlx+wWnzD56dTKYA4NONW+99ePnN9/4RATlnpEh7bYimh4iBz48KnyEQCUP09g0ccfD+zz54E/grrNQiNhwonmaMVEokk8+tfHXBWZdl0ikpJQBq4em4Qh7Wo8AqAX0bxogL4Zz37ur75rGH/e7XPxaG8dH6z979x6ctTXVfPnA/APbYky+cduG1hmFom0bGQm7bj64aApDyBU6AxRRRCN7XN7Bs8aKjj/iSm81xwX3/hzG/JUpFXwxrAAB0zyNPEfk4KfCiGh5prOPVH7TYtS+KgBHGMJvNTZs89rc3XikVXXD5DQ/96blsroAM58yYdN9NV52w8PCVr7z1m/sfr6vNSFfGXvdTpSCka7evlcxbuVKKCH5z/xNHzz+YeWHdY1hMwgxRa2Ex+yW/cdPs3Nn52tvrEglThooVnrER+RUMJEBdSUFABKbdI0NkTP/LHdu+8oJTa2pqLvvf2+++51HLMhvqMg3DMm+8+f4FV98EAP911ok1NSlAYILrocItEr8ImOc8mGfqBEpRqib56tvrNmzczBKmUhqGIiJSBMmAqIQrlSLG+dvr1m/v6E4nE1IpjZs9kWppI2ldAwBQ5OElBOTMcVzXlnqhUkorYU0YM/Kd9z6895GnjEx6cDCn3bhVk3rpjb+/uGZtfV0tZ6x/ICsE54ybpqFRXZhO7WsIAYkRUkCFhuAG5z09/W+99/GYMXtTyMOhAq8chkgIQv9SZfJJAoD3PvrUdRysSYGOQ6hxEyEEOTX6yTchIQEgkHRlS1Ndc2O9Uh4uZYiXLrpLunLq+NEAoEh5YiMCgMuvv0sIMWncKKUU57yrt2/zlh0AmExaXvmO9DyxNCOSVwMCkPrnZ1uKOggebg0LVUClkAUIABs2bw9MN2TbOmaADkZecGcICoAhR9Y/MHjfTVecdMwRTj7POddjSakQkfk1RCklY5wxBEApJRFxzqWURiLx24eeWLp85Zx997nxtodqams8OQfy9FngUULkk4AAsGVHe4iGSGqhX2YefgmTGkKznT39yFjYzxcBOhaTOY4MAYEhAkilajPpffeZgIiG4JwzzhhjzDCEEJwhaqdiJlPCsrSdG4KbpsE5E5wjYnPDsBHDm8466SukjdXL18sVHgj88QCAgLFd/dkQdzxrK6oJAWMUz/71Y01lNpdnLF4ui9VfCIvwgzG0XXfMqOGjR7WRdL27SpFSpIiU8mRrWk//Zc36TzYQMiWV5ySVUkAA0NxUv3lHR0tTQ2tro+24QeoXm933nOTTA4BsIJsNFg8EWFIY9iVcEqz1KMofDSq0iP9ERGR2wZ4+ZayVSCpXRoclnUtzK7Fi1atHn3FJT18/cu7JEMBLQQAa64Zlc/awYZkJo0cUCk5ZHBFmuq8CgACO7YAfrrSXihksAw11K9BDSgFR2cfhKYvDMSQp95s2EaK5ou6pqf3ks82nfO/qebOn7b/fdOU6LMoyABqWrikUbASYNX2ichzmK20Ye3lqyFj4PhSXFIi/pIgX2GIFiimMXkO3i3oRmBMAKKmYIfadPgl8txd+BTnv7x849fs/6d7ZfdIxhwGgdF3wsary/Uo6nSSlBgezs2dMCsuiUqIfIomYlzAhAFCphBGYZwMVddZ7UiaVCTsD0ONjwXGaG+umTxzrZ8dFahUBcv7tS69//c119aOGLzhkLgBxxsBfgeeZlEolLSZ4Z8+uGVPGi2RSZ2bBOKV5VXitFDba0oo6VS7ThosNXi4eJRcpfAXIGEMs2M6EMW3DWxrJdVkIMEmphGVdtejOPy5baSTMOdMnThi3t5PLK6Uc1wUApgWNQEoJw0okEu3tXZPHj25pqndciViUalixIeZ9SlSxNCOqTDB5mlZEz8E0RASggJCKeqsDo3LcGVPGA+MqBJJcKUUisfgPyxfd+kBzU71jO6efuIALYSSTIpE0kkk0zGAQrdippLWtozuRTEwY3Za3bURW6qUrJb3VW/kiHgV/ghDnkxS2HPLq+xHh7z9zKoAXLhDRdaWRSK5a8+b5V/2ytjbtuDKZSvz+8RWvrH1XcG5ZRl//4NnfOHre/jOV4zDGSCkAqK/NdPX0AcDMqeNWv/I2YyxQ7NIgGtbY8uSEdEEA+PKL2LaX8mEg6HLNhyheaJNKJZPWvvtMAF8OSimRSKz/bPPpF14rODcM4TiuIcRzq/+mHAcFp2w23VR/wdkn+cURr9UNq+no7gGAWdMnxTgOIYdSGiaKIKREv/XrAgGVXwGPvOkXaYKVVGKtD1SYbbt7DW+cOHYkkGIMtVve1t6x4MzLtm7abmVS+YKTsEzGMJNOGYLnC/aw1sZnH7xp+tSJyvYqFXoRdbWZjs5eAJg2cUwi5fmtUvIi6wEPOJTv6Sc8wq91RGoroeuAvyVNkUKt5AwAGKJdKEwdPzozrFbZth6Hcb5x8/bW5oYxI1qz2awr1YYt7YO5vMHZYC6fMIyld103fepEWchzzik0YWNd7fsffgoAE8aMbBvevKO9w/A7QEXrjWyUxPsQAJKXLUX4VOzkGzIVH4WtBf3yeuBClCv3mz4RAJUizpExBq47b86Mlx673UM3iIccf8Hr73zAEDmypXdfN3fOTDefF4JDVAUb62u7evsAoKGhbuLovTZu2mamhZKqipdGAATGsLwb1mUaVs1Le3wK/w6Fe51+syIGIiIUfPbMyeHOAECOo5yCUygQ4Ctv/P3N9z9OmIZt24/ccc1hB+/v+NSG0RIANDbU9fUPAhAgmzl1nJKS+XPFwGxkSf6CS2O1d0qiWhzek4aIjuvW1aW/MGU8aIBZTOKAIWOAiHjHQ8uyg7lcwf7dzT84ev5BTj5vCF6UGATLhsb62r7BrCzYALDf9Em6hBSjM2hhmXvOPJ5c+T2BIgSX9wpYfBozjOA3Y2g77ugRraNGtIJ0oxgLlFLMNNd/suHp519moO5adMlJx8x383lDa3JIJ4MB6zLpfD6fzecBYMbksX4JseK+n6Ym6FAlOu9GwuE3qaRBSKkc25kxdYIwLenK8H30K8x3P/xU96btv1n0P2edvNAteJoctHB/AKjNpFyp+gZyADB21PC2lqaC44bNB8rpLSDqXb4qoXQ3p3jKxgEPV8Z0jGjOjEngh4dgKKUUN80Nm7befO8fbvj5peeccYKbz4vYPlC8qdqaFEPcNTAIAOlMZsqEvW3Hy6uqnSoDICqPT4IWl3BJPw/SQ5ijiDpwFz0TgTCNL0ydAH6SFJIGAMCOju7rrzjnsvNPl4WCtwMUTQOISAF556iU0oF6Z2c3ACgF+06bSAqQISIGNc0YCCkSHZ64pFUJS/6KVTGXiuXcuhzPEG3bHjG8eZ9JY5R0/dK394cxVI4zd9a0ubNnuPm8pjacAIXm9rXDlUwYScvs6OoFAMZw/Ji9IBQUI6RScYc1hMCKC444ndI4HJk/eLMUt3gFNK8fARCpVCLBuAD09lnQVwe9OpCusAw/KQpmKCL24KZOviTBjo4uANi4ZduSR58xLSOWJ3q/Qns6BEHyHklpgv5IpRL24UoxxJWrDkQzYTANY+v2jot/euvVF52dsgzQAZpIBwH0cA4UCxD+Vob+QyEHTQSI7M8rXvznhi033/vYw8tWbdyyvaOzN5VKSlkkGLG4FRqIkSHGd4lLdD5OcOhcUMC0YtMV/WDKYDIpZU0yec/vn3z82dXJpEVKMcaIiDFW9GFUdNq+h+e6+EmEfrpJiCAltHd1W6bZ3tGzedtOwxCpVCKA00Wz99UinEsExhcXkf9KeZVGRADlD1qkOlCPWBTRTiKTTuXy9mA2H5wIIwLyeaRfiG5Qowcoohs9iKwmmSQixsAwBCmlVCQEVnBIqJRS0g2vMDwTETHACvlwvKBThlrwfQ9julxBWhuRAWdMESEi13saPsFKaSkXnRZjTAihC/FK6eI+AYDtuszTBeCcMX8cKaXupje+o/CeAAMlr0jRkE7xVIJ1yWQCEfIFGwgAkQgYw4RpSUWGwRFwMJsH9IshRKmURQCuq4Rg2iBdV/b0DdQkLCGYZRrIUEoVwArTNADAdly74AhD2IWCZZpWyiCCXL5QYa0VU0i98ipIC0HLpKT4CACatuWLF72x7K762ozrSkOIgcHsgsPnvfv8/aefcNS3vrHgrRWLTzj6sIGBXMIy+/sGzv7GV99+bsmxRxx03ulfe2fFko9WPbjptUfXrXzgzp9dnK5JCcGfXHL9O88t+fTlhzeseXjz2sefXHz96BGtbyy/+6+P3jq8pXGwe9ekcaNeWXbn6sdua26scxy3aFARwZQLzv7KfTdajVPlfLR+X9GI1sYxI9s443pTjYjSNYm21ub62ponX3i1raXp3FMXmqbpSJVIWeecekxbS9NzL60d2dbc1tr0zj8+fvyZ1T29vd877bifXHJ2f//guFFtbc0NL77+7l/WvPXCmrfe/WD9G2+te+SJ52fuM+HGq8/lSLf99KKpE8fe/fvl6z74JJEwS+yuyIAyvPBbZZX2MZVHtX8ST7tffcd23HyhoIgCLOY4LhHVJJPvvfneG2+9d8CsaXNmTn5lzZuHHz53nykTnl25ZuO6jwXnRPTf19y6btVLrV+Yvvn1xw+cPU1Xf3Z2dB333R+pgUEAAFPU1w/70U33HThnxtcXHLrs4V8dNG/WsmdX33THw8PqalXJkR/fGUay5TA79J3d2HBsV1IPhNpBMI+njBVzMW2unDMs2Iv/+MwBs2actPCQNSteOu3rRwHA4kefRSLGEBG/c/KCD/adOnfOdMMy1777kW27iqilseHtZ+6WrhSG8ecVq3968/2mIb596aJVj9565Jfnfbj+s3Ovuildk4rIJa69cc+K0a2p3SAtCqIGlfEGulwshBCcG0Iw7kVdx3EpnX5m5Wt9/f3Hf/WQX8189NijDtq6rf2FNW9SukZPfdF3TwZkAPDS629fcu3tmXTKVQoRa1JJ13UN07IsU4vRLtjaq+uADyVQyA+NAOCfeivhSBGcVCYYAIDpzdIy1gIIwACllO0dXf2dPTs7e1T/IEfm9bWMTVt2PPbUqlEj2n7xw/Pr6uoefPy5rp5+NAxXKiI4+bwfHvCVszZs2jZ1wphRe7XYtmOZRk9v7+RDTp0y67jxMxdcds0tmXQqn7fvufGKkSPaVq1ZO3XiuDt+dvHgYC5MVUyAlXz0UMOSEBwg8j1FGGwqACth3XDlOYPZnJVIrFz9Rt62EQEZAwJhGA8sXXH2fy48ceF8x7b/sHxlMmHmcjZnDBE6unatfeHV25Ys/cWPLjz3tGMv+MHNgJBJ19x6zffzBYcL3rOr75pfLrn8/FMPP2TusmdfPOW7V7+4/K7jjz7snDP+dufiPzU01rl+rT9IuQnBh5aRjA2GYsOaI+maGkkq7vC8EbBg24rg3DNP0LeHpRN/fn6NlNJ1XVAqXZN87Z0PXn3zvf33m/bsqlff++CTumGZXC7vOK7rupxz3tS4bMXLV5x/2vFf/dIti5f27hpobmw87+yT9Gifbdj00tr3f3jRmVu27bjkuttztnvhj29Zdt/11136ndfeWvfR+k2WZQaq7rllgppE0ieyfHGm4llLfb7y0mtv/cWdjzTU1bpSht/XzGtraTAN4UpFQJyx/sFcwXaGN9V39fb17hrgnDuu21Q/rKEu3d7Rs6t/UAihlGqsz2TSqe07e+yCQ0DDWxtra1LtHT2ZdDJhmraUGo0WHIcIalPJnv6BHe1diWSiUMi3tTbUptO9fYOd3bsEZ0oVnZPgorun98Jvnfjr6y52slmtm1ji1UQcWISlCDB53N6BPnsByWcYEX22eYeflAIACSEYw3/09AnODMNQSgnOO7p7t+/sEoIbgmt4uLNz19YdXZZpcM4RcMvWna5Upim6enb5CZOX+gDAZqU4Z5ZlKFeaprG9vXvz1k5DcEMIFd/dJyDaq7UpdKMM/hDlkAUBoJ5v2qQxiZDmxIScMA0vACtgAMSQiFIJS/k9icgQwhDeuXvNOcMQhlE8iW+ahoWgFBlCaDwczuW1x9SRnxSYwjCNotgi8RKAm8aMyWNBR9NKNa1yJSLf4l13+uRxo9qaC44TwPowiNEHIoiAgJTfQfoHbQMuxxgdSg+9obSslFLKOw+if3h8C6uVf7/I9GDFtuu2tjTMnjEJpAzv1MZmr/hlGiK6tpOpzcydPT2XK3DGS4uGld4FiJ8aqJDQlRkNQxYUywTRb0GeRH5jjGWzuS/tP6O1rVXaNsbCSlmCy6wJAQDOOvErOheLP6yAVyvnq5EXSyUfLCPoUGUQiGoKIHDOv/fNr0G5fcNwqwY8OGOykD/si7O/Nv/Anl398T2RqiTtdq1QTkeqgP7Y+GHkaBiip7f/6EP/49CD9pf5AisBW5F3q3/zoDcNNmzeNve48/oHsgnLdPyCOCKGKz5FZu+O1Op6ERzvDvQ2PHgpuw1D5At20jRe/tPtkyeMUbZdagvhSeMSjtkeY0wW7LFjRj3w6x8gwOBgzjSNsAMLUxsjIGZIVXgRFldswFKyIWTMpmEMZvPKcZb86uopk8dL/zh8bHnhqVnsrC4rMQDOmZvNHnnI3OWLb9irpbG7s0cpMgzBSmjAkoUGjyL2VoHmgCrfP1NAWGSFjHHGNITs6uppa2lYtuTnC4882M2VfNhSMgUAYOyT+Er5vv7UY+fOzutvf/ChJ/6ys7PHMIRlmkx/GYfIwl+wF/eU/UuvWh49mB0/HwKxL42Cs7P6aJMiIkWSVMF2XNutq8ucctz8H190VktLk5vLccbiA5Yle4jfLXk0WyZwvnHjlqVP//XpVa99uH5TT9+A7bhSn5IMSTTEQABQIc9JofvBvWJg9bxskPGhfxOIM7RMo74uM2nsyEPnzTpp4aFTJo0D6boFJ/IBT3FUAp0whiU6RIKDuKeUEskEIANSO3bs3Lq9c0dnT8+u/lzedlxXnz/zUlaisJA0ftKFRa+u4Oew5NWYfd/gVbC9eQUTQvBkwmysr21trN9reGNrazMgAyA3m9flBH/sSPNQTfT7FY/gmFeo3jTc4Ywx0wBWfR/w/6FJqRxHKsWQVY9AZVs1CVcKIeEO5B8lG9JkvomS/6GKvlvec5QiCERE0IcJhjhjeDA9fTx5oJJNumoEICJWOEWyRw39RVWskZb03123uM56n9kDI/I9RKjfv9DKHLndg5d9AsqRUd7QhjBdBMn5wwvNh6EvrNJE1b8l/zytNKuBcrC0NCeLjELeCvdMH/dIikNE1Hs2ve+69aW31+dvKcX7IoZhlU5ky9S0yA8ln6cNJd3Zc/NBb99VtyAOhUsfDPWl9o2lVJSXcBGv/KuWWRZdV7ms2LAoWB9JRB6WTLybNZchGENFhs8p5yptiNkVhP7HHj61AcQu+o3iOLvTq0gBIAz992j1lVqYKp0SlO1Q9kfx0v//lSB4JwiDFlu5l3L4AotlL/rH/wFEwd2ZPAy7RAAAAABJRU5ErkJggg==" style="width:100%;height:100%;object-fit:cover;"></div>
- <span class="brand-name">LIVREX</span>
- </div>
- 
- </div>
- <div style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:4px;">Bonjour </div>
- <div style="font-size:22px;font-weight:700;color:#fff;">Prêt à livrer ?</div>
-    <div id="pushIndicator" onclick="registerPush()" style="margin-top:10px;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.12);border-radius:20px;padding:7px 14px;width:fit-content;cursor:pointer;">
-      <div class="push-dot" style="width:7px;height:7px;border-radius:50%;background:#f59e0b;flex-shrink:0;"></div>
-      <span class="push-txt" style="font-size:12px;font-weight:700;color:rgba(255,255,255,0.85);">Activer les notifications</span>
+<div id="app">
+  <div class="sbar">
+    <span class="sbar-t" id="clk">9:41</span>
+    <div class="sbar-r">
+      <svg width="16" height="11" viewBox="0 0 16 11" fill="none"><rect x="0" y="4" width="3" height="7" rx="1" fill="white"/><rect x="4.5" y="2" width="3" height="9" rx="1" fill="white"/><rect x="9" y="0" width="3" height="11" rx="1" fill="white"/><rect x="13.5" y="0" width="2.5" height="11" rx="1" fill="white" opacity="0.4"/></svg>
+      <svg width="15" height="11" viewBox="0 0 15 11" fill="none"><path d="M7.5 2.5C5.5 2.5 3.7 3.4 2.4 4.8L1 3.2C2.7 1.5 5 0.5 7.5 0.5S12.3 1.5 14 3.2L12.6 4.8C11.3 3.4 9.5 2.5 7.5 2.5Z" fill="white"/><path d="M7.5 6C6.3 6 5.2 6.6 4.5 7.5L3 5.9C4.1 4.8 5.7 4 7.5 4S10.9 4.8 12 5.9L10.5 7.5C9.8 6.6 8.7 6 7.5 6Z" fill="white"/><circle cx="7.5" cy="9.5" r="1.5" fill="white"/></svg>
+      <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3" stroke="white" stroke-opacity="0.5"/><rect x="2" y="2" width="17" height="8" rx="1.5" fill="white"/></svg>
     </div>
- </div>
- <div class="earn-strip">
- <div class="earn-card"><div class="earn-lbl">Aujourd'hui</div><div class="earn-val" id="todayEarn">CHF 0</div></div>
- <div class="earn-card"><div class="earn-lbl">Livraisons</div><div class="earn-val" id="delivCount">0</div></div>
- </div>
- <div class="status-toggle">
- <div style="display:flex;align-items:center;gap:10px;">
- <div class="s-dot" id="sDot"></div>
- <div><div style="font-size:14px;font-weight:700;" id="sText">En ligne</div><div style="font-size:11px;color:#9AA5BF;" id="sSub">Tu reçois des commandes</div></div>
- </div>
- <button class="toggle" id="toggleBtn" onclick="toggleStatus()"><div class="toggle-thumb"></div></button>
- </div>
- <div class="order-alert hidden" id="orderAlert" onclick="goTo('s2')">
- <div class="alert-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
- <div style="flex:1;"><div class="alert-title"> Nouvelle commande !</div><div class="alert-sub" id="alertSub">Appuie pour voir</div></div>
- <div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
- </div>
- <div class="no-order" id="noOrder">
- <div style="font-size:36px;margin-bottom:10px;"></div>
- <div style="font-size:15px;font-weight:700;color:#0A0A0A;margin-bottom:5px;">En attente de commandes</div>
- <div style="font-size:13px;color:#9AA5BF;line-height:1.5;">Dès qu'un client commande,<br>tu recevras une notification ici.</div>
- <button class="refresh-sm" onclick="checkOrders()">
- <svg id="refreshIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
- Vérifier les commandes
- </button>
- </div>
- <div class="scroll" style="margin-top:16px;padding:0 20px;">
- <div style="font-size:10px;font-weight:700;color:#9AA5BF;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Dernières livraisons</div>
- <div class="card" id="histList"><div style="padding:20px;text-align:center;color:#9AA5BF;font-size:13px;">Tes livraisons apparaîtront ici</div></div>
- <div style="height:20px;"></div>
- </div>
-</div>
+  </div>
 
-<!-- SCREEN 2 — NOUVELLE COMMANDE -->
-<div class="screen" id="s2">
- <div class="sbar"><span class="sbar-t" id="clk2">9:41</span></div>
- <div style="background:#0f172a;padding:8px 24px 22px;border-radius:0 0 28px 28px;flex-shrink:0;">
- <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;background:rgba(255,255,255,0.15);border-radius:20px;padding:5px 12px;width:fit-content;">
- <div style="width:6px;height:6px;border-radius:50%;background:#FCD34D;"></div>
- <span style="font-size:11px;font-weight:700;color:#fff;">Nouvelle commande</span>
- </div>
- <div style="font-size:22px;font-weight:700;color:#fff;margin-bottom:4px;">Commande reçue !</div>
- <div style="font-size:13px;color:rgba(255,255,255,0.6);">Accepte pour te rendre en boutique</div>
- </div>
- <div class="scroll" style="padding:16px 20px 0;">
- <div style="background:#fff;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:12px;box-shadow:0 2px 12px rgba(20,50,168,0.06);border:1px solid rgba(20,50,168,0.06);">
- <div id="s2storeIc" style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;background:#EEF2FF;color:#3D5AFE;">H&M</div>
- <div style="flex:1;"><div style="font-size:15px;font-weight:700;" id="s2storeName">H&M</div><div style="font-size:12px;color:#9AA5BF;" id="s2storeAddr">Rue de Rive 14, Genève</div></div>
- </div>
- <div style="font-size:10px;font-weight:700;color:#9AA5BF;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Articles demandés</div>
- <div class="card" id="s2items" style="margin-bottom:14px;"></div>
- <div style="font-size:10px;font-weight:700;color:#9AA5BF;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Livrer à</div>
- <div style="background:#fff;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:14px;box-shadow:0 2px 12px rgba(20,50,168,0.06);">
- <div style="width:34px;height:34px;border-radius:10px;background:#EEF8FF;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.2" stroke-linecap="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
- <div><div style="font-size:10px;font-weight:700;color:#9AA5BF;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;">Adresse client</div><div style="font-size:14px;font-weight:600;" id="s2addr">—</div></div>
- </div>
- <div style="height:8px;"></div>
- </div>
- <div class="btm-fixed">
- <button class="btn btn-blue" style="margin-bottom:10px;" id="acceptBtn" onclick="acceptOrder()">
- <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
- Accepter et aller en boutique
- </button>
- <button class="btn btn-outline" onclick="refuseOrder()">Refuser</button>
- </div>
-</div>
+  <div class="hdr">
+    <div class="hdr-brand">
+      <div class="hdr-icon">
+        <svg viewBox="0 0 300 300" width="20" height="20"><path d="M90 148 L72 248 L138 248 L138 148 Z" fill="none" stroke="#0f172a" stroke-width="19" stroke-linejoin="round" stroke-linecap="round"/><path d="M104 148 C104 110 124 92 150 92" fill="none" stroke="#0f172a" stroke-width="19" stroke-linecap="round"/><path d="M162 148 L162 248 L228 248 L210 148 Z" fill="none" stroke="#0f172a" stroke-width="19" stroke-linejoin="round" stroke-linecap="round"/><path d="M196 148 C196 110 176 92 150 92" fill="none" stroke="#0f172a" stroke-width="19" stroke-linecap="round"/><polygon points="160,88 138,152 154,152 144,212 172,148 155,148 166,88" fill="#0f172a"/></svg>
+      </div>
+      <span class="hdr-name">LIVREX</span>
+    </div>
+    <div class="success-wrap">
+      <div class="checkmark-circle">
+        <div class="checkmark-inner">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+      </div>
+      <div class="hdr-title" id="hdrTitle">Commande confirmée !</div>
+      <div class="hdr-sub" id="hdrSub">Ton paiement a été accepté.<br>Le coursier est en route pour toi.</div>
+    </div>
+  </div>
 
-<!-- SCREEN 3 — CHECK BOUTIQUE -->
-<div class="screen" id="s3">
- <div class="sbar"><span class="sbar-t" id="clk3">9:41</span></div>
- <div style="background:#0f172a;padding:8px 24px 22px;border-radius:0 0 28px 28px;flex-shrink:0;">
- <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
- <div style="font-size:16px;font-weight:700;color:#fff;">Tu es en boutique</div>
- <span style="background:rgba(255,255,255,0.15);color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;" id="s3badge">H&M</span>
- </div>
- <div style="font-size:13px;color:rgba(255,255,255,0.6);">Coche chaque article selon ce que tu trouves</div>
- </div>
- <div class="scroll" style="padding:16px 20px 0;">
- <div class="prog-bar"><div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div><div class="prog-txt" id="progTxt">0/0 vérifié</div></div>
- <div class="check-card" id="checkList" style="margin-bottom:14px;"></div>
- <div style="background:#EEF2FF;border-radius:14px;padding:12px 14px;display:flex;gap:10px;margin-bottom:14px;border:1px solid #D6E0FF;">
- <div style="width:3px;border-radius:2px;background:#0f172a;flex-shrink:0;"></div>
- <div style="font-size:12px;color:#4A6ACA;line-height:1.5;">Appuie pour marquer <strong>disponible </strong> ou <strong>indisponible </strong></div>
- </div>
- <div style="height:8px;"></div>
- </div>
- <div class="btm-fixed">
- <button class="btn btn-blue" onclick="sendVerif()">
- <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
- Envoyer la vérification
- </button>
- </div>
-</div>
+  <div class="scroll">
+    <div class="eta-card">
+      <div class="eta-ic">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.2" stroke-linecap="round"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      </div>
+      <div class="eta-body">
+        <div class="eta-label">Livraison estimée</div>
+        <div class="eta-value" id="etaValue">~35 min</div>
+        <div class="eta-sub" id="etaAddr">Chargement...</div>
+      </div>
+      <div class="eta-live" id="etaLive">
+        <div class="eta-live-dot"></div>
+        <span class="eta-live-txt">Live</span>
+      </div>
+    </div>
 
-<!-- SCREEN 4 — ATTENTE PAIEMENT -->
-<div class="screen" id="s4">
- <div class="sbar"><span class="sbar-t" id="clk4">9:41</span></div>
- <div style="background:#0f172a;padding:8px 24px 22px;border-radius:0 0 28px 28px;flex-shrink:0;">
- <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:6px;">En attente du paiement</div>
- <div style="font-size:13px;color:rgba(255,255,255,0.6);">Le client a 5 minutes pour confirmer.</div>
- </div>
- <div class="scroll" style="padding:16px 20px 0;">
- <div class="card" style="margin-bottom:14px;" id="s4summary"></div>
- <div class="card" style="margin-bottom:14px;padding:28px 20px;text-align:center;">
- <div class="waiting-ring"></div>
- <div style="font-size:16px;font-weight:700;color:#0A0A0A;margin-bottom:5px;">En attente...</div>
- <div style="font-size:13px;color:#9AA5BF;">Le client consulte les résultats</div>
- <div style="margin-top:10px;font-size:13px;font-weight:700;color:#D97706;">Timer : <span id="clientTimer">5:00</span></div>
- </div>
- <div style="height:8px;"></div>
- </div>
- <div class="btm-fixed">
- <button class="btn btn-blue" onclick="checkPayment()">
- <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
- Vérifier si le client a payé
- </button>
- </div>
-</div>
+    <div class="tracking-card">
+      <div class="tracking-hd">
+        <span class="tracking-title">Suivi en temps réel</span>
+        <span class="tracking-id" id="trackId">#LVX-0001</span>
+      </div>
+      <div class="tracking-steps">
+        <div class="t-step">
+          <div class="t-dot done"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+          <div class="t-info"><div class="t-title">Commande reçue</div><div class="t-time" id="t1time">À l'instant</div></div>
+        </div>
+        <div class="t-step">
+          <div class="t-dot done"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+          <div class="t-info"><div class="t-title">Articles vérifiés en boutique</div><div class="t-time">Vérifié par ton coursier</div></div>
+        </div>
+        <div class="t-step">
+          <div class="t-dot done"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+          <div class="t-info"><div class="t-title">Paiement confirmé</div><div class="t-time">Coursier passe à la caisse</div></div>
+        </div>
+        <div class="t-step" id="step4">
+          <div class="t-dot now" id="step4dot"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="3" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
+          <div class="t-info"><div class="t-title" id="step4title">En route vers toi</div><div class="t-time" id="etaTime">Arrivée estimée dans ~35 min</div></div>
+        </div>
+        <div class="t-step">
+          <div class="t-dot todo" id="step5dot"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#B0BFDC" stroke-width="2.5" stroke-linecap="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+          <div class="t-info"><div class="t-title muted" id="step5title">Livraison à ton adresse</div><div class="t-time" id="step5time">En attente</div></div>
+        </div>
+      </div>
+    </div>
 
-<!-- SCREEN 5 — LIVRER -->
-<div class="screen" id="s5">
- <div class="sbar"><span class="sbar-t" id="clk5">9:41</span></div>
- <div style="background:#0f172a;padding:8px 24px 22px;border-radius:0 0 28px 28px;flex-shrink:0;">
- <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:4px;"> Paiement reçu !</div>
- <div style="font-size:13px;color:rgba(255,255,255,0.6);">Passe à la caisse et livre les articles.</div>
- </div>
- <div class="scroll" style="padding:16px 20px 0;">
- <div class="earn-big"><div class="earn-big-lbl">Ta commission</div><div class="earn-big-val" id="s5earn">CHF —</div><div class="earn-big-sub">Versée après livraison confirmée</div></div>
- <div style="font-size:10px;font-weight:700;color:#9AA5BF;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Récapitulatif caisse</div>
- <div class="card" style="margin-bottom:14px;">
- <div class="c-row"><span class="c-l">À payer en caisse</span><span class="c-r blue" id="s5caisse">CHF —</span></div>
- <div class="c-row"><span class="c-l">Ta commission</span><span class="c-r green" id="s5comm">CHF —</span></div>
- </div>
- <div style="font-size:10px;font-weight:700;color:#9AA5BF;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Livrer à</div>
- <div style="background:#fff;border-radius:16px;padding:14px 16px;display:flex;gap:12px;align-items:center;margin-bottom:14px;box-shadow:0 2px 12px rgba(20,50,168,0.06);">
- <div style="width:34px;height:34px;border-radius:10px;background:#EEF8FF;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.2" stroke-linecap="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
- <div><div style="font-size:10px;font-weight:700;color:#9AA5BF;text-transform:uppercase;margin-bottom:3px;">Adresse</div><div style="font-size:14px;font-weight:600;" id="s5addr">—</div></div>
- </div>
- <div style="height:8px;"></div>
- </div>
- <div class="btm-fixed">
- <button class="btn btn-green" onclick="openPhotoModal()">
- <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
- Livraison effectuée 
- </button>
- </div>
+    <div class="summary-card">
+      <div class="sum-hd">
+        <span class="sum-hd-l">Récapitulatif</span>
+        <span class="sum-hd-r" id="storeLabel">H&M · Genève</span>
+      </div>
+      <div class="sum-row"><span class="sum-l">Articles livrés</span><span class="sum-r" id="itemCount">—</span></div>
+      <div class="sum-row"><span class="sum-l">Livraison</span><span class="sum-r">CHF 20.00</span></div>
+      <div class="sum-row"><span class="sum-l">Moyen de paiement</span><span class="sum-r">Carte •••• 4242</span></div>
+      <div class="sum-row"><span class="sum-l">Total débité</span><span class="sum-r blue" id="totalPaid">CHF —</span></div>
+    </div>
+
+    <div class="rate-card">
+      <div class="rate-title">Comment était ton expérience ?</div>
+      <div class="rate-sub">Ta note aide à améliorer le service</div>
+      <div class="stars" id="stars">
+        <div class="star" onclick="rate(1)">⭐</div>
+        <div class="star" onclick="rate(2)">⭐</div>
+        <div class="star" onclick="rate(3)">⭐</div>
+        <div class="star" onclick="rate(4)">⭐</div>
+        <div class="star" onclick="rate(5)">⭐</div>
+      </div>
+    </div>
+    <div style="height:8px;"></div>
+  </div>
+
+  <div class="btm">
+    <button class="new-order-btn" onclick="newOrder()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      Nouvelle commande
+    </button>
+    <span class="share-btn" onclick="shareApp()">Partager LIVREX avec un ami</span>
+  </div>
 </div>
 
 <script>
@@ -277,438 +202,148 @@ const SUPABASE_URL = 'https://lfsrpuphrvwxhnonddru.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxmc3JwdXBocnZ3eGhub25kZHJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MTg4ODQsImV4cCI6MjA5MTQ5NDg4NH0.wPsTGQprpZDu7lJoVKLMwLn-FPS6-WWdF35kvTSyAy8';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const STORES = {
- 'H&M':{ abbr:'H&M', bg:'#EEF2FF', c:'#3D5AFE', addr:'Rue de Rive 14, Genève' },
- 'Zara':{ abbr:'ZARA', bg:'#FFF0F0', c:'#E53935', addr:'Rue de Rive 8, Genève' },
- 'Globus':{ abbr:'GBL', bg:'#F0FDF4', c:'#16A34A', addr:'Rue du Rhône 48, Genève' },
- 'Manor':{ abbr:'MNR', bg:'#FFFBEB', c:'#D97706', addr:'Rue Cornavin 6, Genève' },
- 'Bongénie':{ abbr:'BNG', bg:'#F5F3FF', c:'#7C3AED', addr:'Rue du Marché 34, Genève' },
-};
-
-let isOnline = true;
-let currentOrder = null;
-let itemStates = {};
-let timerInterval = null;
-let clientTimerSec = 300;
-let totalEarned = 0;
-let totalDeliveries = 0;
-let channel;
-
-
-const VAPID_PUBLIC_KEY = 'BN4MNd5xon92RN8T0_Om59BveUt0Ybb9Z11RIxwy3424Av2-p8Mf5tAUxh4HAVpYp4XsA2-QmMbgt94cshNwumE';
-
-// ══════════════════════════════════════
-// SERVICE WORKER + PUSH NOTIFICATIONS
-// ══════════════════════════════════════
-async function registerPush() {
-  // Vérifier support
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    console.log('Push notifications non supportées');
-    return;
-  }
-
-  try {
-    // Enregistrer le service worker
-    const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
-    console.log('Service worker enregistré');
-
-    // Demander permission notifications
-    const permission = await Notification.requestPermission();
-    if (permission !== 'granted') {
-      console.log('Permission refusée');
-      return;
-    }
-
-    // Souscrire au push
-    let sub = await reg.pushManager.getSubscription();
-    if (!sub) {
-      sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-      });
-    }
-
-    // Sauvegarder la subscription dans Supabase
-    const subJson = sub.toJSON();
-    await sb.from('push_subscriptions').upsert({
-      endpoint: subJson.endpoint,
-      p256dh: subJson.keys.p256dh,
-      auth: subJson.keys.auth,
-      role: 'coursier',
-      created_at: new Date().toISOString()
-    }, { onConflict: 'endpoint' });
-
-    console.log('Push subscription enregistrée');
-    showPushStatus(true);
-  } catch(err) {
-    console.error('Erreur push:', err);
-    showPushStatus(false);
-  }
-}
-
-function urlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
-  const rawData = atob(base64);
-  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
-}
-
-function showPushStatus(enabled) {
-  const indicator = document.getElementById('pushIndicator');
-  if (indicator) {
-    indicator.style.display = 'flex';
-    indicator.style.background = enabled ? '#ECFDF5' : '#FEF9C3';
-    indicator.querySelector('.push-dot').style.background = enabled ? '#22c55e' : '#f59e0b';
-    indicator.querySelector('.push-txt').textContent = enabled ? 'Notifications activées' : 'Notifications désactivées';
-  }
-}
+let orderId = localStorage.getItem('livex_order_id');
+let pollInterval;
 
 window.addEventListener('load', () => {
- updateClock();
- setInterval(updateClock, 30000);
- // Activer notifications push au chargement
- setTimeout(registerPush, 1500);
- // Récupérer commande en cours si app rechargée
- const saved = localStorage.getItem('livex_current_order');
- if (saved) {
- try {
- currentOrder = JSON.parse(saved);
- populateScreen2(currentOrder);
- showAlert(currentOrder);
- } catch(e) {
- localStorage.removeItem('livex_current_order');
- }
- }
- subscribeToOrders();
- checkOrders();
+  const tick = () => {
+    const d = new Date();
+    document.getElementById('clk').textContent = String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  };
+  tick(); setInterval(tick, 30000);
+
+  // ETA dynamique
+  const now = new Date();
+  const eta = new Date(now.getTime() + 35 * 60 * 1000);
+  const etaStr = String(eta.getHours()).padStart(2,'0')+'h'+String(eta.getMinutes()).padStart(2,'0');
+  document.getElementById('etaTime').textContent = 'Arrivée estimée vers '+etaStr;
+  document.getElementById('t1time').textContent = 'Aujourd\'hui à '+String(now.getHours()).padStart(2,'0')+'h'+String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('trackId').textContent = '#'+(orderId || 'LVX-0001').slice(-8);
+
+  if (orderId) {
+    loadOrder();
+    // Poll toutes les 5s pour détecter "delivered"
+    pollInterval = setInterval(pollDelivered, 5000);
+  }
 });
 
-function updateClock() {
- const d = new Date();
- const t = String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
- ['clk1','clk2','clk3','clk4','clk5'].forEach(id => { const el = document.getElementById(id); if(el) el.textContent = t; });
+async function loadOrder() {
+  const { data } = await sb.from('commandes').select('*,delivery_photo').eq('order_id', orderId).single();
+  if (!data) return;
+
+  const storeName = data.store || 'H&M';
+  document.getElementById('storeLabel').textContent = storeName+' · Genève';
+  document.getElementById('etaAddr').textContent = 'Livraison à '+(data.address || 'ton adresse');
+
+  // Compter articles disponibles
+  let conf = data.confirmation;
+  if (typeof conf === 'string') { try { conf = JSON.parse(conf); } catch(e) { conf = null; } }
+  const itemCount = conf?.items ? conf.items.filter(i => i.status === 'ok').length : (data.items?.length || 0);
+  document.getElementById('itemCount').textContent = itemCount+' article'+(itemCount > 1 ? 's' : '');
+
+  // Total simulé
+  const PRICES = [19.90, 29.90, 24.90, 9.90, 39.90, 14.90, 34.90];
+  const subtotal = Array.from({length: itemCount}, (_, i) => PRICES[i % PRICES.length]).reduce((a, b) => a + b, 0);
+  const total = (subtotal + 20 + subtotal * 0.1).toFixed(2);
+  document.getElementById('totalPaid').textContent = 'CHF '+total;
+
+  // Vérifier si déjà delivered
+  if (data.status === 'delivered') {
+    markDelivered(data?.delivery_photo || null);
+  }
 }
 
-function goTo(id) {
- document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
- document.getElementById(id).classList.add('active');
- window.scrollTo(0,0);
+async function pollDelivered() {
+  if (!orderId) return;
+  const { data } = await sb.from('commandes').select('status').eq('order_id', orderId).single();
+  if (data?.status === 'delivered') {
+    clearInterval(pollInterval);
+    markDelivered(data?.delivery_photo || null);
+  }
 }
 
-function toggleStatus() {
- isOnline = !isOnline;
- const btn = document.getElementById('toggleBtn');
- const dot = document.getElementById('sDot');
- if (isOnline) {
- btn.classList.remove('off');
- dot.style.background = '#4ADE80';
- document.getElementById('sText').textContent = 'En ligne';
- document.getElementById('sSub').textContent = 'Tu reçois des commandes';
- subscribeToOrders();
- } else {
- btn.classList.add('off');
- dot.style.background = '#E5E7EB';
- document.getElementById('sText').textContent = 'Hors ligne';
- document.getElementById('sSub').textContent = 'Tu ne reçois pas de commandes';
- }
+function markDelivered(photo) {
+  // Sauvegarder dans l'historique des commandes
+  if (orderId) {
+    const history = JSON.parse(localStorage.getItem('livex_order_history') || '[]');
+    if (!history.includes(orderId)) {
+      history.unshift(orderId);
+      localStorage.setItem('livex_order_history', JSON.stringify(history.slice(0, 50)));
+    }
+  }
+  // Afficher la photo de livraison si disponible
+  if (photo) {
+    showDeliveryPhoto(photo);
+  }
+  // Mettre à jour le tracking — étape 4 done, étape 5 done
+  const step4dot = document.getElementById('step4dot');
+  step4dot.className = 't-dot done';
+  step4dot.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>';
+
+  const step5dot = document.getElementById('step5dot');
+  step5dot.className = 't-dot done';
+  step5dot.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>';
+
+  document.getElementById('step4title').textContent = 'Coursier arrivé';
+  document.getElementById('step5title').textContent = 'Livraison effectuée';
+  document.getElementById('step5title').className = 't-title';
+  document.getElementById('step5time').textContent = 'Livré avec succès';
+
+  document.getElementById('hdrTitle').textContent = 'Livraison effectuée !';
+  document.getElementById('hdrSub').textContent = 'Ton colis est arrivé. Bonne utilisation !';
+
+  document.getElementById('etaValue').textContent = 'Livré';
+  document.getElementById('etaLive').style.background = '#ECFDF5';
+  document.getElementById('etaTime').textContent = 'Livraison terminée';
+
+  // Nettoyer localStorage
+  localStorage.removeItem('livex_order_id');
 }
 
-function subscribeToOrders() {
- if (channel) { sb.removeChannel(channel); }
- channel = sb.channel('new-orders')
- .on('postgres_changes', { event:'INSERT', schema:'public', table:'commandes' }, (payload) => {
- if (!isOnline) return;
- currentOrder = payload.new;
- showAlert(currentOrder);
- })
- .on('postgres_changes', { event:'UPDATE', schema:'public', table:'commandes' }, (payload) => {
- if (currentOrder && payload.new.order_id === currentOrder.order_id) {
- if (payload.new.status === 'paid') { showPaid(payload.new); }
- }
- })
- .subscribe();
+let currentRating = 0;
+function rate(n) {
+  currentRating = n;
+  document.querySelectorAll('.star').forEach((s, i) => {
+    s.classList.toggle('selected', i < n);
+  });
+  // Sauvegarder la note dans Supabase
+  if (orderId) {
+    sb.from('commandes').update({ rating: n }).eq('order_id', orderId);
+  }
 }
 
-async function checkOrders() {
- if (!isOnline) return;
- const icon = document.getElementById('refreshIcon');
- if (icon) { icon.style.animation = 'spin 1s linear infinite'; }
- const { data } = await sb.from('commandes').select('*').eq('status','waiting').order('created_at', { ascending:false }).limit(1);
- if (icon) { icon.style.animation = ''; }
- if (data && data.length > 0) {
- currentOrder = data[0];
- showAlert(currentOrder);
- }
+function showDeliveryPhoto(photo) {
+  // Créer et insérer la card photo avant rate-card
+  const rateCard = document.querySelector('.rate-card');
+  if (!rateCard || !photo) return;
+  
+  const photoCard = document.createElement('div');
+  photoCard.className = 'delivery-photo-card';
+  photoCard.innerHTML = `
+    <div class="delivery-photo-hd">
+      <div class="delivery-photo-hd-ic">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+      </div>
+      <div class="delivery-photo-title">Photo de livraison</div>
+    </div>
+    <img class="delivery-photo-img" src="${photo}" alt="Livraison confirmée">
+  `;
+  rateCard.parentNode.insertBefore(photoCard, rateCard);
 }
 
-function showAlert(order) {
- const items = getItems(order);
- document.getElementById('alertSub').textContent = order.store+' · '+items.length+' article(s)';
- document.getElementById('orderAlert').classList.remove('hidden');
- document.getElementById('noOrder').style.display = 'none';
- // Pré-remplir screen 2 immédiatement
- populateScreen2(order);
+function newOrder() {
+  localStorage.removeItem('livex_order_id');
+  window.location.href = 'index.html';
 }
 
-function populateScreen2(order) {
- const s = STORES[order.store] || STORES['H&M'];
- const ic = document.getElementById('s2storeIc');
- ic.style.background = s.bg; ic.style.color = s.c; ic.textContent = s.abbr;
- document.getElementById('s2storeName').textContent = order.store;
- document.getElementById('s2storeAddr').textContent = s.addr;
- const addrText = order.address || 'Non renseignée';
- const noteText = order.note ? ' — ' + order.note : '';
- document.getElementById('s2addr').textContent = addrText + noteText;
- const items = getItems(order);
- document.getElementById('s2items').innerHTML = items.length > 0
- ? items.map((item,i) => `
- <div class="row">
- <div style="width:26px;height:26px;border-radius:7px;background:#EEF2FF;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#0f172a;flex-shrink:0;">${i+1}</div>
- <div style="flex:1;font-size:14px;font-weight:500;color:#0A0A0A;">${item.name}</div>
- </div>`).join('')
- : '<div style="padding:16px 18px;font-size:13px;color:#9AA5BF;">Chargement des articles...</div>';
-}
-
-function getItems(order) {
- let items = order.items || [];
- if (typeof items === 'string') { try { items = JSON.parse(items); } catch(e) { items = []; } }
- return items;
-}
-
-async function acceptOrder() {
- if (!currentOrder) return;
- const btn = document.getElementById('acceptBtn');
- if (btn) { btn.textContent = 'Acceptation...'; btn.style.opacity = '0.7'; }
- // Mettre à jour Supabase en "accepted"
- await sb.from('commandes').update({ status:'accepted' }).eq('order_id', currentOrder.order_id);
- // Sauvegarder dans localStorage pour résister à un rechargement
- localStorage.setItem('livex_current_order', JSON.stringify(currentOrder));
- document.getElementById('s3badge').textContent = currentOrder.store;
- const items = getItems(currentOrder);
- items.forEach(item => { itemStates[item.id] = true; });
- renderChecklist();
- goTo('s3');
- if (btn) { btn.textContent = 'Accepter et aller en boutique'; btn.style.opacity = '1'; }
-}
-
-
-async function refuseOrder() {
- if (currentOrder) {
- await sb.from('commandes').update({ status:'refused' }).eq('order_id', currentOrder.order_id);
- localStorage.removeItem('livex_current_order');
- }
- currentOrder = null;
- itemStates = {};
- document.getElementById('orderAlert').classList.add('hidden');
- document.getElementById('noOrder').style.display = '';
- goTo('s1');
-}
-
-function renderChecklist() {
- const items = getItems(currentOrder);
- document.getElementById('checkList').innerHTML = items.map(item => `
- <div class="check-row" id="cr${item.id}" onclick="toggleItem(${item.id})">
- <div class="check-toggle on" id="ct${item.id}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg></div>
- <div style="flex:1;"><div class="check-name" id="cn${item.id}">${item.name}</div><div style="font-size:11px;font-weight:600;color:#059669;margin-top:2px;" id="cs${item.id}">Disponible</div></div>
- </div>`).join('');
- updateProgress();
-}
-
-function toggleItem(id) {
- itemStates[id] = !itemStates[id];
- const ct = document.getElementById('ct'+id);
- const cn = document.getElementById('cn'+id);
- const cs = document.getElementById('cs'+id);
- if (itemStates[id]) {
- ct.className = 'check-toggle on';
- ct.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>`;
- cn.classList.remove('crossed'); cs.style.color = '#059669'; cs.textContent = 'Disponible';
- } else {
- ct.className = 'check-toggle off';
- ct.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="3" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>`;
- cn.classList.add('crossed'); cs.style.color = '#DC2626'; cs.textContent = 'Indisponible';
- }
- updateProgress();
-}
-
-function updateProgress() {
- const items = getItems(currentOrder);
- const total = items.length;
- const done = Object.keys(itemStates).length;
- const pct = total > 0 ? Math.round((done/total)*100) : 0;
- document.getElementById('progFill').style.width = pct+'%';
- document.getElementById('progTxt').textContent = done+'/'+total+' vérifié';
-}
-
-async function sendVerif() {
- const items = getItems(currentOrder).map(item => ({ ...item, status: itemStates[item.id] ? 'ok' : 'no' }));
- const conf = { items, timestamp: new Date().toISOString() };
-
- const { error } = await sb.from('commandes').update({ confirmation: conf, status: 'confirmed' }).eq('order_id', currentOrder.order_id);
- if (error) { alert('Erreur: '+error.message); return; }
- // Sauvegarder la confirmation localement pour showPaid()
- currentOrder.confirmation = conf;
- localStorage.setItem('livex_current_order', JSON.stringify(currentOrder));
-
- // Remplir écran 4
- const avail = items.filter(i => i.status === 'ok');
- const unavail = items.filter(i => i.status !== 'ok');
- document.getElementById('s4summary').innerHTML = `
- ${avail.map(i => `<div class="row"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" style="flex-shrink:0;"><path d="M20 6L9 17l-5-5"/></svg><div style="flex:1;font-size:14px;">${i.name}</div><span class="badge badge-green">Dispo</span></div>`).join('')}
- ${unavail.map(i => `<div class="row"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.5" stroke-linecap="round" style="flex-shrink:0;"><path d="M18 6L6 18M6 6l12 12"/></svg><div style="flex:1;font-size:14px;text-decoration:line-through;color:#9AA5BF;">${i.name}</div><span class="badge badge-red">Indispo</span></div>`).join('')}`;
-
- goTo('s4');
- startClientTimer();
-}
-
-function startClientTimer() {
- clientTimerSec = 300;
- clearInterval(timerInterval);
- timerInterval = setInterval(async () => {
- clientTimerSec--;
- const m = Math.floor(clientTimerSec/60);
- const s = clientTimerSec%60;
- const el = document.getElementById('clientTimer');
- if (el) el.textContent = m+':'+String(s).padStart(2,'0');
-
- // Vérifier le statut Supabase toutes les 5 secondes
- if (clientTimerSec % 5 === 0 && currentOrder) {
- try {
- const { data } = await sb.from('commandes').select('status').eq('order_id', currentOrder.order_id).single();
- if (data?.status === 'paid') {
- clearInterval(timerInterval);
- showPaid(data);
- return;
- }
- if (data?.status === 'expired' || data?.status === 'cancelled') {
- clearInterval(timerInterval);
- showOrderCancelled(data.status);
- return;
- }
- } catch(e) {}
- }
-
- if (clientTimerSec <= 0) {
- clearInterval(timerInterval);
- if (el) el.textContent = 'Expiré';
- showOrderCancelled('expired');
- }
- }, 1000);
-}
-
-function showOrderCancelled(reason) {
- // Remettre à zéro et retourner au dashboard
- const msg = reason === 'expired'
- ? 'Le client n\'a pas confirmé dans les 5 minutes. Commande annulée automatiquement.'
- : 'Le client a annulé la commande.';
-
- // Remplacer le contenu de s4 avec le message
- const s4 = document.getElementById('s4');
- const scroll = s4.querySelector('.scroll');
- if (scroll) {
- scroll.innerHTML = `
- <div style="text-align:center;padding:40px 20px;">
- <div style="font-size:48px;margin-bottom:16px;">⏰</div>
- <div style="font-size:18px;font-weight:700;color:#0A0A0A;margin-bottom:8px;">${reason === 'expired' ? 'Temps écoulé' : 'Commande annulée'}</div>
- <div style="font-size:14px;color:#9AA5BF;line-height:1.5;">${msg}</div>
- </div>`;
- }
- const btm = s4.querySelector('.btm-fixed');
- if (btm) {
- btm.innerHTML = `<button class="btn btn-outline" onclick="backToDashboard()" style="background:transparent;border:1.5px solid #E0E8FF;color:#9AA5BF;">Retour au dashboard</button>`;
- }
-}
-
-function backToDashboard() {
- currentOrder = null;
- itemStates = {};
- document.getElementById('orderAlert').classList.add('hidden');
- document.getElementById('noOrder').style.display = '';
- goTo('s1');
-}
-
-async function checkPayment() {
- const { data } = await sb.from('commandes').select('*').eq('order_id', currentOrder.order_id).single();
- if (data?.status === 'paid') { showPaid(data); }
- else { alert('Le client n\'a pas encore payé. Attends encore un peu !'); }
-}
-
-async function showPaid(data) {
- clearInterval(timerInterval);
- // Recharger la commande complète depuis Supabase si confirmation manquante
- let conf = data.confirmation || (currentOrder && currentOrder.confirmation) || {};
- if (!conf.items && currentOrder) {
- const { data: fresh } = await sb.from('commandes').select('confirmation').eq('order_id', currentOrder.order_id).single();
- if (fresh && fresh.confirmation) conf = fresh.confirmation;
- }
- const avail = (conf.items || []).filter(i => i.status === 'ok');
- const commission = 20 + avail.length * 8;
- const caisse = avail.length * 19;
- document.getElementById('s5earn').textContent = 'CHF '+commission.toFixed(2);
- document.getElementById('s5caisse').textContent = 'CHF '+caisse.toFixed(2);
- document.getElementById('s5comm').textContent = 'CHF '+commission.toFixed(2);
- document.getElementById('s5addr').textContent = currentOrder.address || 'Non renseignée';
- goTo('s5');
-}
-
-async function confirmDelivery() {
- const btn = document.querySelector('#s5 .btm-fixed .btn');
- if (btn) { btn.textContent = 'Confirmation...'; btn.style.opacity = '0.7'; }
- await sb.from('commandes').update({ status:'delivered' }).eq('order_id', currentOrder.order_id);
- localStorage.removeItem('livex_current_order');
- const conf = currentOrder.confirmation || {};
- const avail = (conf.items || []).filter(i => i.status === 'ok');
- const commission = 20 + avail.length * 8;
- totalDeliveries++;
- totalEarned += commission;
- document.getElementById('todayEarn').textContent = 'CHF '+totalEarned;
- document.getElementById('delivCount').textContent = totalDeliveries;
- const histList = document.getElementById('histList');
- if (histList.querySelector('div[style]')) histList.innerHTML = '';
- const now = new Date();
- const row = document.createElement('div');
- row.className = 'hist-row';
- row.innerHTML = `<div><div class="hist-store">${currentOrder.store}</div><div class="hist-time">Aujourd'hui à ${String(now.getHours()).padStart(2,'0')}h${String(now.getMinutes()).padStart(2,'0')}</div></div><div class="hist-earn">+CHF ${commission.toFixed(2)}</div>`;
- histList.prepend(row);
- currentOrder = null; itemStates = {};
- document.getElementById('orderAlert').classList.add('hidden');
- document.getElementById('noOrder').style.display = '';
- goTo('s1');
+function shareApp() {
+  if (navigator.share) {
+    navigator.share({ title: 'LIVREX', text: 'Découvre LIVREX — ton coursier personnel à Genève !', url: window.location.origin });
+  } else {
+    navigator.clipboard?.writeText(window.location.origin);
+    alert('Lien copié !');
+  }
 }
 </script>
-
-<!-- MODAL PHOTO CONFIRMATION LIVRAISON -->
-<div class="photo-modal-overlay" id="photoModalOverlay">
-  <div class="photo-modal">
-    <div class="photo-modal-handle"></div>
-    <div class="photo-modal-title">Confirmer la livraison</div>
-    <div class="photo-modal-sub">Prends une photo comme preuve de livraison — le client la recevra directement.</div>
-    
-    <div class="photo-preview-wrap" id="delivPhotoWrap">
-      <img id="delivPhotoImg" src="" alt="Photo livraison">
-      <button class="photo-preview-del" onclick="removeDelivPhoto()">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-      </button>
-    </div>
-
-    <div class="photo-btn-row">
-      <button class="photo-btn photo-btn-take" onclick="takeDelivPhoto()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-        <span id="photoBtnTxt">Prendre une photo</span>
-      </button>
-      <button class="photo-btn photo-btn-skip" onclick="confirmDelivery(false)">
-        Sans photo
-      </button>
-    </div>
-
-    <button class="photo-confirm-btn" id="photoConfirmBtn" style="display:none;" onclick="confirmDelivery(true)">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
-      Confirmer avec cette photo
-    </button>
-  </div>
-</div>
-
-<input type="file" id="delivPhotoInput" accept="image/*" capture="environment" style="display:none" onchange="handleDelivPhoto(event)">
-
 </body>
 </html>
