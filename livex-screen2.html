@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>LIVREX — Commander</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; background: #F5F7FF; color: #0A0A0A; overflow: hidden; }
+#app { position: fixed; inset: 0; display: flex; flex-direction: column; background: #F5F7FF; overflow: hidden; }
+.sbar { background: #0f172a; padding: 14px 24px 8px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+.sbar-t { font-size: 15px; font-weight: 600; color: #fff; }
+.topnav { background: #0f172a; padding: 6px 20px 22px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; border-radius: 0 0 28px 28px; }
+.back { width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.store-pill { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.15); border-radius: 24px; padding: 7px 14px 7px 7px; }
+.pill-ic { width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; }
+.pill-name { font-size: 13px; font-weight: 700; color: #fff; }
+.hdr { padding: 22px 24px 16px; flex-shrink: 0; }
+.hdr-h { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.2; color: #0A0A0A; margin-bottom: 6px; }
+.hdr-h span { color: #9AA5BF; font-weight: 300; }
+.hdr-sub { font-size: 14px; color: #9AA5BF; line-height: 1.5; }
+.scroll { flex: 1; overflow-y: auto; padding: 4px 20px 0; -webkit-overflow-scrolling: touch; }
+.scroll::-webkit-scrollbar { display: none; }
+.sec { margin-bottom: 20px; }
+.sec-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 0 2px; }
+.sec-t { font-size: 10px; font-weight: 700; color: #9AA5BF; letter-spacing: 2.5px; text-transform: uppercase; }
+.sec-cnt { font-size: 11px; font-weight: 700; color: #0f172a; background: #EEF2FF; border-radius: 20px; padding: 2px 9px; }
+.art-wrap { background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 2px 16px rgba(20,50,168,0.06); border: 1px solid rgba(20,50,168,0.06); }
+.art-row { display: flex; align-items: center; padding: 0 16px; height: 56px; border-bottom: 1px solid #F0F4FF; animation: slideIn 0.22s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes slideIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+.art-row:focus-within { background: #FAFBFF; }
+.art-idx { width: 24px; height: 24px; border-radius: 7px; background: #F0F4FF; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #9AA5BF; flex-shrink: 0; margin-right: 12px; transition: all 0.2s; }
+.art-row:focus-within .art-idx { background: #EEF2FF; color: #0f172a; }
+.art-inp { flex: 1; background: transparent; border: none; outline: none; font-size: 15px; color: #0A0A0A; font-family: inherit; padding: 0; caret-color: #0f172a; }
+.art-inp::placeholder { color: #C8D0E8; }
+.art-del { width: 30px; height: 30px; border-radius: 50%; background: transparent; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; margin-left: 6px; opacity: 0; transition: opacity 0.15s; }
+.art-row:focus-within .art-del, .art-row:hover .art-del { opacity: 1; }
+.add-btn { display: flex; align-items: center; gap: 12px; padding: 16px; cursor: pointer; border-top: 1px solid #F0F4FF; transition: background 0.15s; }
+.add-btn:active { background: #FAFBFF; }
+.add-ic { width: 24px; height: 24px; border-radius: 7px; border: 1.5px dashed #C8D0E8; display: flex; align-items: center; justify-content: center; }
+.add-lbl { font-size: 13px; font-weight: 600; color: #B0BFDC; }
+.addr-card { background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 2px 16px rgba(20,50,168,0.06); border: 1px solid rgba(20,50,168,0.06); }
+.addr-row { display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px; border-bottom: 1px solid #F0F4FF; }
+.addr-row:last-child { border-bottom: none; }
+.addr-row:focus-within { background: #FAFBFF; }
+.addr-ic { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+.addr-body { flex: 1; }
+.addr-lbl { font-size: 10px; font-weight: 700; color: #9AA5BF; letter-spacing: 1px; margin-bottom: 5px; text-transform: uppercase; }
+.addr-inp { width: 100%; background: transparent; border: none; outline: none; font-size: 15px; color: #0A0A0A; font-family: inherit; padding: 0; caret-color: #0f172a; }
+.addr-inp::placeholder { color: #C8D0E8; }
+.info-card { background: #EEF2FF; border-radius: 16px; padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start; border: 1px solid #D6E0FF; }
+.info-line { width: 3px; border-radius: 2px; background: #0f172a; flex-shrink: 0; align-self: stretch; min-height: 36px; }
+.info-txt { font-size: 13px; color: #4A6ACA; line-height: 1.6; }
+.info-txt strong { color: #0f172a; font-weight: 700; }
+.btm { background: #fff; border-top: 1px solid #EEF2FF; padding: 14px 20px 38px; flex-shrink: 0; box-shadow: 0 -4px 20px rgba(20,50,168,0.06); }
+.btm-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.btm-lbl { font-size: 12px; color: #9AA5BF; font-weight: 500; }
+.btm-val { font-size: 13px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 5px; }
+.cta { width: 100%; border: none; border-radius: 16px; padding: 18px; font-size: 16px; font-weight: 700; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
+.cta.off { background: #EEF2FF; color: #B0BFDC; pointer-events: none; }
+.cta.on { background: #0f172a; color: #fff; box-shadow: 0 6px 24px rgba(20,50,168,0.35); }
+.cta.on:active { transform: scale(0.98); }
+.cta.loading { background: #4A7AFF; color: #fff; pointer-events: none; }
+.overlay { position: fixed; inset: 0; background: rgba(10,30,80,0.5); z-index: 100; display: flex; align-items: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(6px); }
+.overlay.on { opacity: 1; pointer-events: all; }
+.modal { background: #fff; border-radius: 28px 28px 0 0; padding: 20px 22px 48px; width: 100%; transform: translateY(100%); transition: transform 0.38s cubic-bezier(0.32,0.72,0,1); }
+.overlay.on .modal { transform: translateY(0); }
+.m-handle { width: 36px; height: 4px; background: #E0E8FF; border-radius: 2px; margin: 0 auto 22px; }
+.m-store { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.m-store-ic { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; }
+.m-store-name { font-size: 17px; font-weight: 700; color: #0A0A0A; }
+.m-store-sub { font-size: 12px; color: #9AA5BF; margin-top: 2px; }
+.m-items { background: #F5F7FF; border-radius: 16px; overflow: hidden; margin-bottom: 14px; border: 1px solid #E0E8FF; }
+.m-item { display: flex; align-items: center; gap: 10px; padding: 13px 16px; border-bottom: 1px solid #EEF2FF; }
+.m-item:last-child { border-bottom: none; }
+.m-num { width: 20px; height: 20px; border-radius: 6px; background: #EEF2FF; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #0f172a; flex-shrink: 0; }
+.m-txt { font-size: 14px; color: #0A0A0A; }
+.m-fees { background: #F5F7FF; border-radius: 16px; padding: 14px 16px; margin-bottom: 16px; border: 1px solid #E0E8FF; }
+.m-fee { display: flex; justify-content: space-between; padding: 6px 0; }
+.m-fee-l { font-size: 13px; color: #9AA5BF; }
+.m-fee-r { font-size: 13px; font-weight: 600; color: #4A6ACA; }
+.m-div { border: none; border-top: 1px solid #EEF2FF; margin: 8px 0; }
+.m-fee.tot .m-fee-l { color: #0A0A0A; font-weight: 700; font-size: 14px; }
+.m-fee.tot .m-fee-r { color: #0f172a; font-size: 16px; font-weight: 800; }
+.m-note { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 18px; }
+.m-note-txt { font-size: 12px; color: #9AA5BF; line-height: 1.5; }
+.m-cta { width: 100%; background: #0f172a; color: #fff; border: none; border-radius: 14px; padding: 17px; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 6px 20px rgba(20,50,168,0.3); transition: opacity 0.15s; }
+.m-cta:active { opacity: 0.88; }
+.m-cancel { width: 100%; background: transparent; border: 1.5px solid #EEF2FF; border-radius: 14px; padding: 15px; font-size: 14px; font-weight: 600; color: #9AA5BF; font-family: inherit; cursor: pointer; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="sbar"><span class="sbar-t" id="clk">9:41</span></div>
+  <div class="topnav">
+    <div class="back" onclick="history.back()">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2.5" stroke-linecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    </div>
+    <div class="store-pill" id="sPill">
+      <div class="pill-ic" id="pillIc" style="background:#EEF2FF;color:#3D5AFE;">H&M</div>
+      <span class="pill-name" id="pillName">H&M</span>
+    </div>
+    <div style="width:38px;"></div>
+  </div>
+  <div class="hdr">
+    <div class="hdr-h">Ta commande<br><span>dis-nous tout</span></div>
+    <div class="hdr-sub">Un article par ligne — taille, couleur, modèle.</div>
+  </div>
+  <div class="scroll">
+    <div class="sec">
+      <div class="sec-hd"><span class="sec-t">Articles</span><span class="sec-cnt" id="cnt">0 article</span></div>
+      <div class="art-wrap">
+        <div id="artList"></div>
+        <div class="add-btn" onclick="addArt()">
+          <div class="add-ic"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#B0BFDC" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+          <span class="add-lbl">Ajouter un article</span>
+        </div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-hd"><span class="sec-t">Livraison</span></div>
+      <div class="addr-card">
+        <div class="addr-row">
+          <div class="addr-ic" style="background:#EEF8FF;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.2" stroke-linecap="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+          <div class="addr-body"><div class="addr-lbl">Adresse de livraison</div><input class="addr-inp" id="addrInp" type="text" placeholder="Rue et numéro, Genève..."/></div>
+        </div>
+        <div class="addr-row">
+          <div class="addr-ic" style="background:#FFFBEE;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+          <div class="addr-body"><div class="addr-lbl">Note (optionnel)</div><input class="addr-inp" id="noteInp" type="text" placeholder="Étage, code d'accès..."/></div>
+        </div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="info-card">
+        <div class="info-line"></div>
+        <div class="info-txt"><strong>Paiement après vérification.</strong> Tu ne paies qu'une fois ton coursier en boutique et tes articles confirmés disponibles.</div>
+      </div>
+    </div>
+    <div style="height:8px;"></div>
+  </div>
+  <div class="btm">
+    <div class="btm-row">
+      <span class="btm-lbl">Livraison estimée</span>
+      <span class="btm-val"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>30–45 min · CHF 20</span>
+    </div>
+    <button class="cta off" id="ctaBtn" onclick="openModal()">
+      Envoyer la commande
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeOut(event)">
+  <div class="modal">
+    <div class="m-handle"></div>
+    <div class="m-store">
+      <div class="m-store-ic" id="mIc" style="background:#EEF2FF;color:#3D5AFE;">H&M</div>
+      <div><div class="m-store-name" id="mName">H&M</div><div class="m-store-sub">Genève · Livraison dans l'heure</div></div>
+    </div>
+    <div class="m-items" id="mItems"></div>
+    <div class="m-fees">
+      <div class="m-fee"><span class="m-fee-l">Frais de livraison</span><span class="m-fee-r">CHF 20.00</span></div>
+      <div class="m-fee"><span class="m-fee-l">Commission LIVREX</span><span class="m-fee-r" id="mComm">CHF —</span></div>
+      <hr class="m-div">
+      <div class="m-fee tot"><span class="m-fee-l">Total estimé</span><span class="m-fee-r" id="mTotal">CHF —</span></div>
+    </div>
+    <div class="m-note">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9AA5BF" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+      <div class="m-note-txt">Tu seras débité uniquement après confirmation des articles par le coursier.</div>
+    </div>
+    <button class="m-cta" id="confirmBtn" onclick="doConfirm()">
+      Confirmer la commande
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </button>
+    <button class="m-cancel" onclick="closeModal()">Annuler</button>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://lfsrpuphrvwxhnonddru.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxmc3JwdXBocnZ3eGhub25kZHJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MTg4ODQsImV4cCI6MjA5MTQ5NDg4NH0.wPsTGQprpZDu7lJoVKLMwLn-FPS6-WWdF35kvTSyAy8';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let arts = [], n = 0;
+const STORES = {
+  'H&M': { abbr:'H&M', bg:'#EEF2FF', c:'#3D5AFE' },
+  'Zara': { abbr:'ZARA', bg:'#FFF0F0', c:'#E53935' },
+  'Globus': { abbr:'GBL', bg:'#F0FDF4', c:'#16A34A' },
+  'Manor': { abbr:'MNR', bg:'#FFFBEB', c:'#D97706' },
+  'Bongénie': { abbr:'BNG', bg:'#F5F3FF', c:'#7C3AED' },
+};
+
+window.addEventListener('load', () => {
+  addArt(); addArt();
+  const name = localStorage.getItem('livex_store') || 'H&M';
+  const s = STORES[name] || STORES['H&M'];
+  ['pillIc','mIc'].forEach(id => { const el = document.getElementById(id); el.style.background = s.bg; el.style.color = s.c; el.textContent = s.abbr; });
+  document.getElementById('pillName').textContent = name;
+  document.getElementById('mName').textContent = name;
+  const t = () => { const d = new Date(); document.getElementById('clk').textContent = String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
+  t(); setInterval(t, 30000);
+});
+
+function addArt() {
+  n++; const id = 'a'+n; arts.push(id);
+  const row = document.createElement('div');
+  row.className = 'art-row'; row.id = 'r'+id;
+  row.innerHTML = `<div class="art-idx" id="i${id}">${arts.length}</div><input class="art-inp" id="${id}" type="text" placeholder="Ex: T-shirt blanc taille M..." oninput="onChange()"/><button class="art-del" onclick="removeArt('${id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#FF6B6B" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>`;
+  document.getElementById('artList').appendChild(row);
+  onChange();
+  if (arts.length > 2) setTimeout(() => document.getElementById(id)?.focus(), 120);
+}
+
+function removeArt(id) {
+  if (arts.length <= 1) return;
+  arts = arts.filter(a => a !== id);
+  document.getElementById('r'+id)?.remove();
+  document.querySelectorAll('.art-idx').forEach((el,i) => el.textContent = i+1);
+  onChange();
+}
+
+function getItems() { return arts.map(id => document.getElementById(id)?.value.trim()).filter(Boolean); }
+
+function onChange() {
+  const items = getItems();
+  document.getElementById('ctaBtn').className = items.length > 0 ? 'cta on' : 'cta off';
+  const c = items.length;
+  document.getElementById('cnt').textContent = c === 0 ? '0 article' : c === 1 ? '1 article' : c+' articles';
+}
+
+function openModal() {
+  const items = getItems(); if (!items.length) return;
+  document.getElementById('mItems').innerHTML = items.map((t,i) => `<div class="m-item"><div class="m-num">${i+1}</div><div class="m-txt">${t}</div></div>`).join('');
+  const comm = (items.length*8).toFixed(2);
+  const total = (20+parseFloat(comm)).toFixed(2);
+  document.getElementById('mComm').textContent = 'CHF '+comm;
+  document.getElementById('mTotal').textContent = 'CHF ~'+total+'+';
+  document.getElementById('overlay').classList.add('on');
+}
+
+function closeModal() { document.getElementById('overlay').classList.remove('on'); }
+function closeOut(e) { if (e.target === document.getElementById('overlay')) closeModal(); }
+
+async function doConfirm() {
+  const items = getItems();
+  const btn = document.getElementById('confirmBtn');
+  btn.textContent = 'Envoi en cours...';
+  btn.style.opacity = '0.7';
+  btn.style.pointerEvents = 'none';
+
+  const orderId = 'LVX-'+Date.now();
+  const order = {
+    order_id: orderId,
+    store: localStorage.getItem('livex_store') || 'H&M',
+    items: items.map((name,i) => ({ id:i, name, status:'pending' })),
+    address: document.getElementById('addrInp').value.trim() || 'Non renseignée',
+    note: document.getElementById('noteInp').value.trim(),
+    status: 'waiting',
+    confirmation: null
+  };
+
+  const { error } = await sb.from('commandes').insert([order]);
+
+  if (error) {
+    alert('Erreur : '+error.message);
+    btn.textContent = 'Confirmer la commande';
+    btn.style.opacity = '1';
+    btn.style.pointerEvents = 'auto';
+    return;
+  }
+
+  localStorage.setItem('livex_order_id', orderId);
+  localStorage.setItem('livex_store', order.store);
+  window.location.href = 'livex-screen3.html';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>LIVREX — Résultats</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; background: #F5F7FF; color: #0A0A0A; overflow: hidden; }
+#app { position: fixed; inset: 0; display: flex; flex-direction: column; background: #F5F7FF; overflow: hidden; }
+.sbar { background: #0f172a; padding: 14px 24px 8px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+.sbar-t { font-size: 15px; font-weight: 600; color: #fff; }
+.hdr { background: #0f172a; padding: 10px 24px 24px; border-radius: 0 0 28px 28px; flex-shrink: 0; }
+.hdr-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.hdr-brand { display: flex; align-items: center; gap: 10px; }
+.hdr-icon { width: 34px; height: 34px; border-radius: 9px; background: #fff; display: flex; align-items: center; justify-content: center; }
+.hdr-name { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: 3px; }
+.verified-badge { display: flex; align-items: center; gap: 6px; background: rgba(74,222,128,0.2); border: 1px solid rgba(74,222,128,0.4); border-radius: 20px; padding: 5px 12px; font-size: 11px; font-weight: 700; color: #4ADE80; }
+.hdr-title { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.3px; }
+.hdr-sub { font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 5px; }
+/* TIMER */
+.timer-wrap { background: #fff; margin: 16px 20px 0; border-radius: 18px; padding: 16px 20px; display: flex; align-items: center; gap: 16px; box-shadow: 0 2px 16px rgba(20,50,168,0.08); border: 1px solid rgba(20,50,168,0.08); flex-shrink: 0; }
+.timer-circle { position: relative; width: 56px; height: 56px; flex-shrink: 0; }
+.timer-svg { transform: rotate(-90deg); }
+.timer-bg { fill: none; stroke: #EEF2FF; stroke-width: 4; }
+.timer-prog { fill: none; stroke: #0f172a; stroke-width: 4; stroke-linecap: round; stroke-dasharray: 150.8; stroke-dashoffset: 0; transition: stroke-dashoffset 1s linear, stroke 0.5s; }
+.timer-prog.urgent { stroke: #EF4444; }
+.timer-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; color: #0f172a; }
+.timer-num.urgent { color: #EF4444; }
+.timer-info { flex: 1; }
+.timer-title { font-size: 14px; font-weight: 700; color: #0A0A0A; margin-bottom: 3px; }
+.timer-sub { font-size: 12px; color: #9AA5BF; line-height: 1.4; }
+/* SCROLL */
+.scroll { flex: 1; overflow-y: auto; padding: 16px 20px 0; -webkit-overflow-scrolling: touch; }
+.scroll::-webkit-scrollbar { display: none; }
+.sec { margin-bottom: 16px; }
+.sec-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 0 2px; }
+.sec-t { font-size: 10px; font-weight: 700; color: #9AA5BF; letter-spacing: 2px; text-transform: uppercase; }
+.sec-badge { font-size: 11px; font-weight: 700; border-radius: 20px; padding: 3px 9px; }
+.badge-ok { background: #ECFDF5; color: #059669; }
+.badge-no { background: #FEF2F2; color: #DC2626; }
+.items-card { background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 2px 16px rgba(20,50,168,0.06); border: 1px solid rgba(20,50,168,0.06); }
+.item-row { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-bottom: 1px solid #F5F7FF; }
+.item-row:last-child { border-bottom: none; }
+.item-status-ic { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.ic-ok { background: #ECFDF5; }
+.ic-no { background: #FEF2F2; }
+.item-body { flex: 1; }
+.item-name { font-size: 15px; font-weight: 600; color: #0A0A0A; margin-bottom: 2px; }
+.item-name.crossed { text-decoration: line-through; color: #9AA5BF; }
+.item-meta { font-size: 12px; color: #9AA5BF; }
+.item-price { font-size: 14px; font-weight: 700; color: #0f172a; flex-shrink: 0; }
+.item-price.na { color: #D1D5DB; font-weight: 400; font-size: 12px; }
+.total-card { background: #fff; border-radius: 20px; padding: 16px 18px; margin-bottom: 16px; box-shadow: 0 2px 16px rgba(20,50,168,0.06); border: 1px solid rgba(20,50,168,0.06); }
+.total-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid #F5F7FF; }
+.total-row:last-child { border-bottom: none; }
+.total-l { font-size: 13px; color: #9AA5BF; }
+.total-r { font-size: 13px; font-weight: 600; color: #4A6ACA; }
+.total-row.final .total-l { font-size: 15px; font-weight: 700; color: #0A0A0A; }
+.total-row.final .total-r { font-size: 17px; font-weight: 800; color: #0f172a; }
+.info-strip { background: #EEF2FF; border-radius: 14px; padding: 12px 14px; display: flex; gap: 10px; align-items: flex-start; margin-bottom: 16px; border: 1px solid #D6E0FF; }
+.info-dot { width: 5px; height: 5px; border-radius: 50%; background: #0f172a; flex-shrink: 0; margin-top: 5px; }
+.info-t { font-size: 12px; color: #4A6ACA; line-height: 1.5; }
+.btm { background: #fff; border-top: 1px solid #EEF2FF; padding: 14px 20px 38px; flex-shrink: 0; box-shadow: 0 -4px 20px rgba(20,50,168,0.06); }
+.btm-amount { display: flex; justify-content: space-between; align-items: center; margin-bottom: 13px; }
+.btm-lbl { font-size: 12px; color: #9AA5BF; }
+.btm-val { font-size: 15px; font-weight: 800; color: #0f172a; }
+.pay-btn { width: 100%; background: #0f172a; color: #fff; border: none; border-radius: 16px; padding: 18px; font-size: 16px; font-weight: 700; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 6px 24px rgba(20,50,168,0.35); transition: all 0.2s; }
+.pay-btn:active { transform: scale(0.98); opacity: 0.9; }
+.pay-btn.expired { background: #E5E7EB; color: #9CA3AF; box-shadow: none; pointer-events: none; }
+.cancel-lnk { display: block; text-align: center; margin-top: 12px; font-size: 13px; color: #B0BFDC; cursor: pointer; }
+/* MODAL */
+.overlay { position: fixed; inset: 0; background: rgba(10,30,80,0.5); z-index: 100; display: flex; align-items: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(6px); }
+.overlay.on { opacity: 1; pointer-events: all; }
+.modal { background: #fff; border-radius: 28px 28px 0 0; padding: 20px 22px 48px; width: 100%; transform: translateY(100%); transition: transform 0.38s cubic-bezier(0.32,0.72,0,1); }
+.overlay.on .modal { transform: translateY(0); }
+.m-handle { width: 36px; height: 4px; background: #E0E8FF; border-radius: 2px; margin: 0 auto 22px; }
+.m-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+.m-sub { font-size: 13px; color: #9AA5BF; margin-bottom: 22px; }
+.pm { background: #F5F7FF; border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 14px; border: 1.5px solid #E0E8FF; cursor: pointer; }
+.pm.sel { border-color: #0f172a; background: #EEF2FF; }
+.pm-ic { width: 38px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; flex-shrink: 0; }
+.pm-name { font-size: 14px; font-weight: 600; color: #0A0A0A; }
+.pm-detail { font-size: 12px; color: #9AA5BF; margin-top: 2px; }
+.pm-check { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #D0D8F0; display: flex; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
+.pm.sel .pm-check { background: #0f172a; border-color: #0f172a; }
+.m-total { display: flex; justify-content: space-between; background: #F5F7FF; border-radius: 12px; padding: 14px 16px; margin-bottom: 18px; border: 1px solid #E0E8FF; }
+.m-pay-btn { width: 100%; background: #0f172a; color: #fff; border: none; border-radius: 14px; padding: 17px; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; margin-bottom: 10px; box-shadow: 0 6px 20px rgba(20,50,168,0.3); display: flex; align-items: center; justify-content: center; gap: 8px; }
+.m-pay-btn:active { opacity: 0.88; }
+.m-cancel { width: 100%; background: transparent; border: 1.5px solid #EEF2FF; border-radius: 14px; padding: 15px; font-size: 14px; font-weight: 600; color: #9AA5BF; font-family: inherit; cursor: pointer; }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="sbar"><span class="sbar-t" id="clk">9:41</span></div>
+  <div class="hdr">
+    <div class="hdr-top">
+      <div class="hdr-brand">
+        <div class="hdr-icon"><svg viewBox="0 0 300 300" width="20" height="20"><path d="M90 148 L72 248 L138 248 L138 148 Z" fill="none" stroke="#0f172a" stroke-width="19" stroke-linejoin="round" stroke-linecap="round"/><path d="M104 148 C104 110 124 92 150 92" fill="none" stroke="#0f172a" stroke-width="19" stroke-linecap="round"/><path d="M162 148 L162 248 L228 248 L210 148 Z" fill="none" stroke="#0f172a" stroke-width="19" stroke-linejoin="round" stroke-linecap="round"/><path d="M196 148 C196 110 176 92 150 92" fill="none" stroke="#0f172a" stroke-width="19" stroke-linecap="round"/><polygon points="160,88 138,152 154,152 144,212 172,148 155,148 166,88" fill="#0f172a"/></svg></div>
+        <span class="hdr-name">LIVREX</span>
+      </div>
+      <div class="verified-badge"><div style="width:5px;height:5px;border-radius:50%;background:#4ADE80;"></div>Vérifié en boutique</div>
+    </div>
+    <div class="hdr-title">Résultats de<br>ta commande</div>
+    <div class="hdr-sub" id="hdrSub">Voici ce que le coursier a trouvé.</div>
+  </div>
+  <div class="timer-wrap">
+    <div class="timer-circle">
+      <svg class="timer-svg" width="56" height="56" viewBox="0 0 56 56"><circle class="timer-bg" cx="28" cy="28" r="24"/><circle class="timer-prog" id="timerProg" cx="28" cy="28" r="24"/></svg>
+      <div class="timer-num" id="timerNum">5:00</div>
+    </div>
+    <div class="timer-info">
+      <div class="timer-title" id="timerTitle">Confirme rapidement !</div>
+      <div class="timer-sub" id="timerSub">Le coursier attend. Valide avant l'expiration.</div>
+    </div>
+  </div>
+  <div class="scroll">
+    <div class="sec" id="dispoSection">
+      <div class="sec-hd"><span class="sec-t">Disponibles</span><span class="sec-badge badge-ok" id="dispoCount">0 article</span></div>
+      <div class="items-card" id="dispoList"></div>
+    </div>
+    <div class="sec" id="indispoSection" style="display:none;">
+      <div class="sec-hd"><span class="sec-t">Indisponibles</span><span class="sec-badge badge-no" id="indispoCount">0 article</span></div>
+      <div class="items-card" id="indispoList"></div>
+    </div>
+    <div class="total-card">
+      <div class="total-row"><span class="total-l">Sous-total articles</span><span class="total-r" id="subtotal">CHF —</span></div>
+      <div class="total-row"><span class="total-l">Frais de livraison</span><span class="total-r">CHF 20.00</span></div>
+      <div class="total-row"><span class="total-l">Commission LIVREX</span><span class="total-r" id="commission">CHF —</span></div>
+      <div class="total-row final"><span class="total-l">Total à payer</span><span class="total-r" id="totalFinal">CHF —</span></div>
+    </div>
+    <div class="info-strip">
+      <div class="info-dot"></div>
+      <div class="info-t">Tu paies uniquement les articles <strong>disponibles</strong>. Les articles indisponibles ne sont pas facturés.</div>
+    </div>
+    <div style="height:8px;"></div>
+  </div>
+  <div class="btm">
+    <div class="btm-amount"><span class="btm-lbl">Total à payer maintenant</span><span class="btm-val" id="btmTotal">CHF —</span></div>
+    <button class="pay-btn" id="payBtn" onclick="openPayment()">
+      Payer maintenant
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
+    </button>
+    <span class="cancel-lnk" onclick="cancelOrder()">Refuser et annuler</span>
+  </div>
+</div>
+
+<!-- Modal paiement -->
+<div class="overlay" id="overlay" onclick="closeOut(event)">
+  <div class="modal">
+    <div class="m-handle"></div>
+    <div class="m-title">Finalise le paiement</div>
+    <div class="m-sub">Choisis ton moyen de paiement.</div>
+    <div class="pm sel" id="pm1" onclick="selPM(1)">
+      <div class="pm-ic" style="background:#0f172a;color:#fff;">VISA</div>
+      <div><div class="pm-name">Carte bancaire</div><div class="pm-detail">•••• •••• •••• 4242</div></div>
+      <div class="pm-check" id="c1"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+    </div>
+    <div class="pm" id="pm2" onclick="selPM(2)">
+      <div class="pm-ic" style="background:#000;color:#fff;font-size:14px;">🍎</div>
+      <div><div class="pm-name">Apple Pay</div><div class="pm-detail">Paiement instantané</div></div>
+      <div class="pm-check" id="c2"></div>
+    </div>
+    <div class="m-total"><span style="font-size:14px;font-weight:600;">Total à débiter</span><span style="font-size:16px;font-weight:800;color:#0f172a;" id="mTotal">CHF —</span></div>
+    <button class="m-pay-btn" onclick="confirmPayment()">Confirmer et payer</button>
+    <button class="m-cancel" onclick="closeModal()">Annuler</button>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://lfsrpuphrvwxhnonddru.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxmc3JwdXBocnZ3eGhub25kZHJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MTg4ODQsImV4cCI6MjA5MTQ5NDg4NH0.wPsTGQprpZDu7lJoVKLMwLn-FPS6-WWdF35kvTSyAy8';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let timerInterval, totalSeconds = 300, totalAmount = 0;
+const CIRC = 150.8;
+const PRICES = [19.90, 29.90, 24.90, 9.90, 39.90, 14.90, 34.90];
+let orderId = localStorage.getItem('livex_order_id');
+
+window.addEventListener('load', () => {
+  const t = () => { const d = new Date(); document.getElementById('clk').textContent = String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); };
+  t(); setInterval(t, 30000);
+  loadResults();
+  startTimer();
+});
+
+async function loadResults() {
+  if (!orderId) { demoMode(); return; }
+  const { data } = await sb.from('commandes').select('*').eq('order_id', orderId).single();
+  if (!data) { demoMode(); return; }
+  // Confirmation peut être un objet ou une string JSON
+  let conf = data.confirmation;
+  if (typeof conf === 'string') { try { conf = JSON.parse(conf); } catch(e) { conf = null; } }
+  if (!conf || !conf.items) { demoMode(); return; }
+  const dispo = conf.items.filter(i => i.status === 'ok');
+  const indispo = conf.items.filter(i => i.status !== 'ok');
+  document.getElementById('hdrSub').textContent = dispo.length+' article(s) disponibles sur '+(dispo.length+indispo.length)+' demandés.';
+  renderItems(dispo, indispo);
+}
+
+function demoMode() {
+  renderItems(
+    [{ name:'T-shirt blanc taille M' }, { name:'T-shirt noir taille L' }, { name:'Chaussettes taille 42' }],
+    [{ name:'Caleçon taille M' }]
+  );
+}
+
+function renderItems(dispo, indispo) {
+  document.getElementById('dispoCount').textContent = dispo.length + (dispo.length <= 1 ? ' article' : ' articles');
+  document.getElementById('dispoList').innerHTML = dispo.length > 0
+    ? dispo.map((item,i) => {
+        const price = PRICES[i % PRICES.length];
+        return `<div class="item-row"><div class="item-status-ic ic-ok"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg></div><div class="item-body"><div class="item-name">${item.name}</div><div class="item-meta">Disponible ✓</div></div><div class="item-price">CHF ${price.toFixed(2)}</div></div>`;
+      }).join('')
+    : '<div style="padding:20px;text-align:center;color:#9AA5BF;">Aucun article disponible</div>';
+
+  if (indispo.length > 0) {
+    document.getElementById('indispoSection').style.display = 'block';
+    document.getElementById('indispoCount').textContent = indispo.length + (indispo.length <= 1 ? ' article' : ' articles');
+    document.getElementById('indispoList').innerHTML = indispo.map(item => `
+      <div class="item-row"><div class="item-status-ic ic-no"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></div><div class="item-body"><div class="item-name crossed">${item.name}</div><div class="item-meta">Indisponible</div></div><div class="item-price na">—</div></div>`).join('');
+  }
+  const subtotal = dispo.reduce((sum,_,i) => sum + PRICES[i % PRICES.length], 0);
+  const comm = parseFloat((subtotal * 0.10).toFixed(2));
+  totalAmount = parseFloat((subtotal + 20 + comm).toFixed(2));
+  document.getElementById('subtotal').textContent = 'CHF '+subtotal.toFixed(2);
+  document.getElementById('commission').textContent = 'CHF '+comm.toFixed(2);
+  document.getElementById('totalFinal').textContent = 'CHF '+totalAmount.toFixed(2);
+  document.getElementById('btmTotal').textContent = 'CHF '+totalAmount.toFixed(2);
+  document.getElementById('mTotal').textContent = 'CHF '+totalAmount.toFixed(2);
+}
+
+function startTimer() {
+  const prog = document.getElementById('timerProg');
+  const num = document.getElementById('timerNum');
+  timerInterval = setInterval(() => {
+    totalSeconds--;
+    const m = Math.floor(totalSeconds/60), s = totalSeconds%60;
+    num.textContent = m+':'+String(s).padStart(2,'0');
+    prog.style.strokeDashoffset = CIRC * (1 - totalSeconds/300);
+    if (totalSeconds <= 60) {
+      prog.classList.add('urgent'); num.classList.add('urgent');
+      document.getElementById('timerTitle').textContent = '⚡ Plus que quelques secondes !';
+    }
+    if (totalSeconds <= 0) {
+      clearInterval(timerInterval);
+      num.textContent = '0:00';
+      document.getElementById('timerTitle').textContent = 'Temps expiré';
+      document.getElementById('timerSub').textContent = 'La commande a été annulée.';
+      document.getElementById('payBtn').className = 'pay-btn expired';
+      document.getElementById('payBtn').textContent = 'Délai expiré';
+      // Notifier Supabase que le timer a expiré
+      if (orderId) {
+        sb.from('commandes').update({ status:'expired' }).eq('order_id', orderId);
+      }
+    }
+  }, 1000);
+}
+
+function openPayment() { if (totalSeconds > 0) document.getElementById('overlay').classList.add('on'); }
+function closeModal() { document.getElementById('overlay').classList.remove('on'); }
+function closeOut(e) { if (e.target === document.getElementById('overlay')) closeModal(); }
+
+let selPMn = 1;
+function selPM(n) {
+  selPMn = n;
+  [1,2].forEach(i => {
+    const pm = document.getElementById('pm'+i);
+    const c = document.getElementById('c'+i);
+    if (i===n) { pm.classList.add('sel'); c.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>`; }
+    else { pm.classList.remove('sel'); c.innerHTML = ''; }
+  });
+}
+
+async function confirmPayment() {
+  clearInterval(timerInterval);
+  if (orderId) {
+    await sb.from('commandes').update({ status:'paid' }).eq('order_id', orderId);
+  }
+  window.location.href = 'livex-screen5.html';
+}
+
+async function cancelOrder() {
+  if (confirm('Annuler la commande ?')) {
+    clearInterval(timerInterval);
+    if (orderId) {
+      await sb.from('commandes').update({ status:'cancelled' }).eq('order_id', orderId);
+    }
+    localStorage.removeItem('livex_order_id');
+    window.location.href = 'index.html';
+  }
+}
+</script>
+</body>
+</html>
