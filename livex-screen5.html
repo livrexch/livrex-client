@@ -250,6 +250,14 @@ async function pollDelivered() {
 }
 
 function markDelivered() {
+  // Sauvegarder dans l'historique des commandes
+  if (orderId) {
+    const history = JSON.parse(localStorage.getItem('livex_order_history') || '[]');
+    if (!history.includes(orderId)) {
+      history.unshift(orderId);
+      localStorage.setItem('livex_order_history', JSON.stringify(history.slice(0, 50)));
+    }
+  }
   // Mettre à jour le tracking — étape 4 done, étape 5 done
   const step4dot = document.getElementById('step4dot');
   step4dot.className = 't-dot done';
