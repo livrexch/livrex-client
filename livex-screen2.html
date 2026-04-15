@@ -609,35 +609,50 @@ function onChange() {
 }
 
 function openModal() {
-  if (!isValidOrder()) return;
-  // Verifier adresse
+  const items = getItems();
+  
+  // Vérif 1 : au moins 1 article avec un lien
+  if (!isValidOrder()) {
+    showValidationError('Ajoute un lien vers chaque article pour continuer.');
+    return;
+  }
+  
+  // Vérif 2 : adresse obligatoire
   if (!isAddressValid()) {
     showValidationError('Ajoute ton adresse de livraison pour continuer.');
     document.getElementById('addrInp')?.focus();
     return;
   }
-  // Vérifier qu'aucun upload est en cours
-  const uploadingBtns = document.querySelectorAll('.art-opt-btn.has-content');
-  const isUploading = [...document.querySelectorAll('.art-opt-btn')].some(b => b.textContent.includes('Upload'));
-  if (isUploading) {
-    alert("Photo en cours d upload, patiente quelques secondes...");
-    return;
-  }
-  const items = getItems(); if (!items.length) return;
+  
+  // Construire le récap
   document.getElementById('mItems').innerHTML = items.map((item, i) => `
     <div class="m-item">
       <div class="m-num">${i+1}</div>
       <div class="m-item-body">
-        <div class="m-txt">${item.name}</div>
-        ${item.photo ? '<span class="m-badge">Photo jointe</span>' : ''}
+        <div class="m-txt">${item.name || 'Article ' + (i+1)}</div>
+        ${item.price ? '<span class="m-badge" style="background:#ecfdf5;color:#059669;">💰 ' + item.price + '</span>' : ''}
         ${item.url ? '<span class="m-badge">Lien joint</span>' : ''}
       </div>
-      ${item.photo ? `<img class="m-thumb" src="${item.photo}">` : ''}
     </div>`).join('');
-  const comm = (items.length*8).toFixed(2);
-  const total = (20+parseFloat(comm)).toFixed(2);
-  document.getElementById('mComm').textContent = 'CHF '+comm;
-  document.getElementById('mTotal').textContent = 'CHF ~'+total+'+';
+
+  // Calcul du total avec les prix détectés
+  let articlesTotal = 0;
+  items.forEach(item => {
+    if (item.price) {
+      const num = parseFloat(item.price.toString().replace('CHF','').replace(',','.').trim());
+      if (!isNaN(num)) articlesTotal += num;
+    }
+  });
+  
+  const livraison = 20;
+  const commission = items.length * 8;
+  const total = livraison + commission + articlesTotal;
+  
+  document.getElementById('mComm').textContent = 'CHF ' + commission.toFixed(2);
+  document.getElementById('mTotal').textContent = articlesTotal > 0 
+    ? 'CHF ' + total.toFixed(2) 
+    : 'CHF ~' + (livraison + commission).toFixed(2) + '+';
+  
   document.getElementById('overlay').classList.add('on');
 }
 
