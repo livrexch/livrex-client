@@ -536,17 +536,33 @@ function removeUrl(id) {
 
 function getItems() {
   return arts.map(id => {
-    const name = document.getElementById(id)?.value.trim() || '';
+    const textVal = document.getElementById(id)?.value.trim() || '';
     const photoEl = document.getElementById('photoImg'+id);
-    const photo = photoEl?.dataset.url || photoEl?.src || '';
+    const photo = photoEl?.dataset?.photoUrl || photoEl?.src || '';
     const url = document.getElementById('urlInp'+id)?.value.trim() || '';
-    if (!name && !photo && !url) return null;
+    
+    // Nom = texte saisi OU nom détecté par IA + couleur + taille
+    let name = textVal;
+    if (!name && photoEl) {
+      const nom = photoEl.dataset?.nom || '';
+      const couleur = photoEl.dataset?.couleur || '';
+      const ref = photoEl.dataset?.reference || '';
+      if (nom) {
+        name = nom;
+        if (couleur) name += ' — ' + couleur;
+        if (ref) name += ' (réf: ' + ref + ')';
+      }
+    }
+    
+    const cleanPhoto = photo.startsWith('http') ? photo : (photo.startsWith('data:') ? photo : '');
+    if (!name && !cleanPhoto && !url) return null;
+    
     return {
       id: arts.indexOf(id),
-      name: name || 'Article sans description',
-      photo: photo.startsWith('http') ? photo : (photo.startsWith('data:') ? photo : ''),
+      name: name || '(voir photo)',
+      photo: cleanPhoto,
       url: url,
-      price: document.getElementById('photoImg'+id)?.dataset?.price || document.getElementById('urlInp'+id)?.dataset?.price || null,
+      price: photoEl?.dataset?.price || document.getElementById('urlInp'+id)?.dataset?.price || null,
       status: 'pending'
     };
   }).filter(Boolean);
@@ -728,12 +744,13 @@ async function searchPriceByRef(id, reference, store) {
   const priceTag = document.getElementById('photoPriceTag'+id);
   if (priceTag) { priceTag.textContent = 'Recherche prix...'; }
   
+  // Sites SUISSES uniquement — prix en CHF
   const STORE_SEARCH = {
     'H&M':      'https://www2.hm.com/fr_ch/search-results.html?q=' + encodeURIComponent(reference),
     'Zara':     'https://www.zara.com/ch/fr/search?searchTerm=' + encodeURIComponent(reference),
     'Globus':   'https://www.globus.ch/fr/search?q=' + encodeURIComponent(reference),
     'Manor':    'https://www.manor.ch/fr/search?query=' + encodeURIComponent(reference),
-    'Bongenié': 'https://www.bongeniegrieder.ch/fr/search?q=' + encodeURIComponent(reference),
+    'Bongénie': 'https://www.bongeniegrieder.ch/fr/search?q=' + encodeURIComponent(reference),
   };
   
   const targetUrl = STORE_SEARCH[store];
@@ -743,8 +760,10 @@ async function searchPriceByRef(id, reference, store) {
     const resp = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl));
     const html = await resp.text();
     
+    // Chercher prix en CHF (suisse) — pas en EUR
     const priceMatch = html.match(/CHF\s*([0-9]+[.,][0-9]{2})/i) || 
-                       html.match(/"price"[^"]*"([0-9]+[.,][0-9]{2})"/i);
+                       html.match(/Fr\.?\s*([0-9]+[.,][0-9]{2})/i) ||
+                       html.match(/"price"[^:]*:\s*"([0-9]+[.,][0-9]{2})"/i);
     
     if (priceMatch) {
       const price = 'CHF ' + parseFloat(priceMatch[1].replace(',','.')).toFixed(2);
@@ -851,7 +870,14 @@ function detectPrice(id) {
     try {
       // Utiliser Open Graph / meta price depuis l'URL
       // On passe par un proxy CORS pour lire la page
-      const proxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+      // Utiliser le site suisse si possible
+      let fetchUrl = url;
+      if (url.includes('zara.com') && !url.includes('/ch/')) {
+        fetchUrl = url.replace('zara.com', 'zara.com/ch/fr');
+      } else if (url.includes('hm.com') && !url.includes('fr_ch')) {
+        fetchUrl = url.replace('hm.com', 'hm.com').replace('/fr_', '/fr_ch');
+      }
+      const proxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(fetchUrl);
       const resp = await fetch(proxy);
       const html = await resp.text();
       
