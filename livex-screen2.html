@@ -742,158 +742,19 @@ async function detectPriceFromPhoto(id, base64Image) {
 
 async function searchPriceByRef(id, reference, store) {
   const priceTag = document.getElementById('photoPriceTag'+id);
-  if (priceTag) { priceTag.textContent = 'Recherche prix...'; }
-  
-  // Sites SUISSES uniquement — prix en CHF
-  const STORE_SEARCH = {
-    'H&M':      'https://www2.hm.com/fr_ch/search-results.html?q=' + encodeURIComponent(reference),
-    'Zara':     'https://www.zara.com/ch/fr/search?searchTerm=' + encodeURIComponent(reference),
-    'Globus':   'https://www.globus.ch/fr/search?q=' + encodeURIComponent(reference),
-    'Manor':    'https://www.manor.ch/fr/search?query=' + encodeURIComponent(reference),
-    'Bongénie': 'https://www.bongeniegrieder.ch/fr/search?q=' + encodeURIComponent(reference),
-  };
-  
-  const targetUrl = STORE_SEARCH[store];
-  if (!targetUrl) return;
+  if (priceTag) { priceTag.textContent = 'Recherche ' + store + '.ch...'; }
   
   try {
-    const resp = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl));
-    const html = await resp.text();
-    
-    // Chercher prix en CHF (suisse) — pas en EUR
-    const priceMatch = html.match(/CHF\s*([0-9]+[.,][0-9]{2})/i) || 
-                       html.match(/Fr\.?\s*([0-9]+[.,][0-9]{2})/i) ||
-                       html.match(/"price"[^:]*:\s*"([0-9]+[.,][0-9]{2})"/i);
-    
-    if (priceMatch) {
-      const price = 'CHF ' + parseFloat(priceMatch[1].replace(',','.')).toFixed(2);
-      const imgEl = document.getElementById('photoImg'+id);
-      if (imgEl) imgEl.dataset.price = price;
-      prixParArticle[id] = parseFloat(priceMatch[1].replace(',','.'));
-      if (priceTag) {
-        priceTag.style.background = 'rgba(5,150,105,0.92)';
-        priceTag.textContent = '💰 ' + price;
-      }
-      updateTotal();
-    } else {
-      if (priceTag) {
-        priceTag.style.background = 'rgba(99,102,241,0.85)';
-        priceTag.textContent = 'Réf: ' + reference;
-      }
-    }
-  } catch(e) {
-    if (priceTag) priceTag.style.display = 'none';
-  }
-}
-
-// ═══════════════════════════════════
-// CALCUL DU TOTAL AUTOMATIQUE
-// ═══════════════════════════════════
-function updateTotal() {
-  let total = 0;
-  let nbArticles = 0;
-  
-  for (const id in prixParArticle) {
-    if (arts.includes(id) && prixParArticle[id] > 0) {
-      total += prixParArticle[id];
-      nbArticles++;
-    }
-  }
-  
-  const livraison = 20;
-  const commission = nbArticles * 8;
-  const grandTotal = total + livraison + commission;
-  
-  // Mettre à jour l'affichage du total si des prix sont détectés
-  const totalEl = document.getElementById('detectedTotal');
-  if (nbArticles > 0) {
-    if (!totalEl) {
-      // Créer le bloc total sous les articles
-      const artSection = document.querySelector('.sec');
-      const totalDiv = document.createElement('div');
-      totalDiv.id = 'detectedTotal';
-      totalDiv.style.cssText = 'background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:16px;padding:14px 18px;margin-bottom:16px;';
-      totalDiv.innerHTML = buildTotalHTML(total, livraison, commission, grandTotal, nbArticles);
-      artSection.after(totalDiv);
-    } else {
-      totalEl.innerHTML = buildTotalHTML(total, livraison, commission, grandTotal, nbArticles);
-    }
-  } else if (totalEl) {
-    totalEl.remove();
-  }
-  
-  // Mettre à jour aussi le modal récap
-  const mTotal = document.getElementById('mTotal');
-  const mComm = document.getElementById('mComm');
-  if (mTotal && grandTotal > livraison) mTotal.textContent = 'CHF ' + grandTotal.toFixed(2);
-  if (mComm) mComm.textContent = 'CHF ' + commission.toFixed(2);
-}
-
-function buildTotalHTML(articles, livraison, commission, total, nb) {
-  return `
-    <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.5);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Prix détectés automatiquement</div>
-    <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-      <span style="font-size:13px;color:rgba(255,255,255,0.7);">Articles (${nb} détectés)</span>
-      <span style="font-size:13px;font-weight:700;color:#fff;">CHF ${articles.toFixed(2)}</span>
-    </div>
-    <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-      <span style="font-size:13px;color:rgba(255,255,255,0.7);">Livraison</span>
-      <span style="font-size:13px;font-weight:700;color:#fff;">CHF ${livraison.toFixed(2)}</span>
-    </div>
-    <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-      <span style="font-size:13px;color:rgba(255,255,255,0.7);">Commission LIVREX</span>
-      <span style="font-size:13px;font-weight:700;color:#fff;">CHF ${commission.toFixed(2)}</span>
-    </div>
-    <div style="height:1px;background:rgba(255,255,255,0.1);margin:8px 0;"></div>
-    <div style="display:flex;justify-content:space-between;">
-      <span style="font-size:15px;font-weight:700;color:#fff;">Total estimé</span>
-      <span style="font-size:17px;font-weight:800;color:#4ade80;">CHF ${total.toFixed(2)}</span>
-    </div>
-    <div style="font-size:10px;color:rgba(255,255,255,0.4);margin-top:6px;">Prix basés sur la détection IA — peut varier légèrement</div>`;
-}
-
-
-// Détection de prix depuis URL — Claude analyse la page
-let priceDetectTimers = {};
-function detectPrice(id) {
-  const url = document.getElementById('urlInp'+id)?.value.trim();
-  const tag = document.getElementById('priceTag'+id);
-  if (!tag) return;
-  if (!url || !url.startsWith('http')) { tag.style.display = 'none'; return; }
-  
-  clearTimeout(priceDetectTimers[id]);
-  priceDetectTimers[id] = setTimeout(() => extractPriceFromUrl(id, url), 1000);
-}
-
-async function extractPriceFromUrl(id, url) {
-  const tag = document.getElementById('priceTag'+id);
-  if (!tag) return;
-  
-  tag.style.display = 'block';
-  tag.style.color = '#94a3b8';
-  tag.textContent = 'Analyse du produit...';
-  
-  const store = localStorage.getItem('livex_store') || '';
-  
-  try {
-    // Récupérer le contenu de la page via proxy
-    const proxy = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
-    const resp = await fetch(proxy);
-    const html = await resp.text();
-    
-    // Extraire seulement les 3000 premiers chars pertinents (title + meta + prix)
-    const headSection = html.substring(0, 5000);
-    
-    // Envoyer à Claude pour extraction précise du prix CHF
+    // Claude cherche le produit par référence sur le site suisse
     const aiResp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 150,
+        max_tokens: 200,
         messages: [{
           role: 'user',
-          content: ("Voici du HTML d'une page produit de la boutique " + store + " (site suisse). Extrais le nom exact et le prix en CHF suisse. Reponds en JSON: {\"nom\": \"...\", \"prix\": \"CHF XX.XX\", \"reference\": \"...\"} ou null. HTML: " + headSection.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").substring(0, 2000))
+          content: 'Cherche le produit avec la reference "' + reference + '" sur le site suisse de ' + store + ' (ex: hm.com/fr_ch, zara.com/ch/fr, globus.ch, manor.ch). Quel est son nom exact et prix en CHF suisse ? Reponds UNIQUEMENT en JSON: {"nom": "nom exact", "prix": "CHF XX.XX", "couleur": "couleur ou null", "taille_dispo": "XS/S/M/L/XL ou null"} ou null si pas trouve.'
         }]
       })
     });
@@ -902,142 +763,42 @@ async function extractPriceFromUrl(id, url) {
     let result = {};
     try { result = JSON.parse(aiData.content?.[0]?.text?.trim() || 'null') || {}; } catch(e) {}
     
-    if (result && result.prix) {
-      const priceNum = parseFloat(result.prix.replace('CHF','').replace(',','.').trim());
-      tag.style.display = 'block';
-      tag.style.color = '#059669';
-      tag.textContent = '💰 ' + result.prix;
-      document.getElementById('urlInp'+id).dataset.price = result.prix;
-      document.getElementById('urlInp'+id).dataset.nom = result.nom || '';
-      prixParArticle['url_'+id] = priceNum;
-      
-      // Auto-remplir le champ texte si vide
-      const artInp = document.getElementById(id);
-      if (artInp && !artInp.value.trim() && result.nom) {
-        artInp.value = result.nom;
-        onChange();
-      }
-      updateTotal();
-    } else {
-      tag.style.color = '#94a3b8';
-      tag.textContent = 'Prix non trouvé';
-      setTimeout(() => { tag.style.display = 'none'; }, 2000);
-    }
-  } catch(e) {
-    tag.style.display = 'none';
-  }
-}
-
-
-async function validateOrderWithAI(items) {
-  // Vérification locale rapide d'abord (sans IA)
-  const itemNames = items.map(i => i.name || '').filter(Boolean);
-  
-  for (const name of itemNames) {
-    // Refuser les chaînes aléatoires (trop de chiffres/caractères spéciaux)
-    const hasOnlyGarbage = /^[^a-zA-ZÀ-ÿ]{4,}$/.test(name);
-    const tooManyNumbers = (name.match(/\d/g) || []).length > name.length * 0.6;
-    if (hasOnlyGarbage || tooManyNumbers) {
-      showValidationError('Décris ton article correctement — ex: "T-shirt blanc taille M"');
-      return false;
-    }
-    // Mots interdits évidents
-    const badWords = ['pipi', 'caca', 'merde', 'fuck', 'shit', 'test123', 'aaaaaa', 'zzzzz'];
-    if (badWords.some(w => name.toLowerCase().includes(w))) {
-      showValidationError('Commande invalide. Décris un vrai article à acheter.');
-      return false;
-    }
-  }
-  
-  // Si pas d'article texte (que des photos/liens) → OK sans IA
-  if (!itemNames.length) return true;
-  
-  // Validation IA pour les cas ambigus
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 50,
-        messages: [{
-          role: 'user',
-          content: "Ces articles sont-ils de vraies demandes d'achat pour la boutique " + localStorage.getItem('livex_store') + " ? Articles: " + itemNames.join(', ') + ". Reponds UNIQUEMENT OUI ou NON."
-        }]
-      })
-    });
-    const data = await response.json();
-    const answer = data.content?.[0]?.text?.trim().toUpperCase() || 'OUI';
+    const imgEl = document.getElementById('photoImg'+id);
     
-    if (answer.includes('NON')) {
-      showValidationError('Commande invalide. Décris des vrais articles à acheter en boutique.');
-      return false;
+    if (result && result.prix && result.prix.includes('CHF')) {
+      const priceNum = parseFloat(result.prix.replace('CHF','').replace(',','.').trim());
+      if (priceNum > 0) {
+        if (priceTag) {
+          priceTag.style.background = 'rgba(5,150,105,0.92)';
+          priceTag.textContent = '💰 ' + result.prix;
+        }
+        if (imgEl) {
+          imgEl.dataset.price = result.prix;
+          if (result.nom) imgEl.dataset.nom = result.nom;
+          if (result.couleur) imgEl.dataset.couleur = result.couleur;
+        }
+        prixParArticle[id] = priceNum;
+        
+        // Auto-remplir champ texte
+        const artInp = document.getElementById(id);
+        if (artInp && !artInp.value.trim() && result.nom) {
+          let autoFill = result.nom;
+          if (result.couleur && result.couleur !== 'null') autoFill += ' — ' + result.couleur;
+          artInp.value = autoFill;
+          onChange();
+        }
+        updateTotal();
+        return;
+      }
     }
-    return true;
+    if (priceTag) {
+      priceTag.style.background = 'rgba(99,102,241,0.85)';
+      priceTag.textContent = 'Réf: ' + reference;
+    }
   } catch(e) {
-    // Si l'IA échoue, on laisse passer (pour ne pas bloquer les vraies commandes)
-    return true;
+    if (priceTag) {
+      priceTag.style.background = 'rgba(99,102,241,0.85)';
+      priceTag.textContent = 'Réf: ' + reference;
+    }
   }
 }
-
-function showValidationError(msg) {
-  // Afficher un message d'erreur élégant
-  let errBox = document.getElementById('validationErr');
-  if (!errBox) {
-    errBox = document.createElement('div');
-    errBox.id = 'validationErr';
-    errBox.style.cssText = 'position:fixed;bottom:120px;left:50%;transform:translateX(-50%);background:#ef4444;color:#fff;padding:12px 20px;border-radius:14px;font-size:14px;font-weight:600;z-index:999;max-width:300px;text-align:center;box-shadow:0 8px 24px rgba(239,68,68,0.4);animation:slideUp 0.3s ease;';
-    document.body.appendChild(errBox);
-  }
-  errBox.textContent = '⚠️ ' + msg;
-  errBox.style.display = 'block';
-  setTimeout(() => { if(errBox) errBox.style.display = 'none'; }, 3500);
-}
-
-async function doConfirm() {
-  const items = getItems();
-  const btn = document.getElementById('confirmBtn');
-  
-  // Validation anti-troll par IA
-  btn.textContent = 'Vérification...';
-  btn.style.opacity = '0.7';
-  btn.style.pointerEvents = 'none';
-  
-  const isValid = await validateOrderWithAI(items);
-  if (!isValid) {
-    btn.textContent = 'Confirmer la commande';
-    btn.style.opacity = '1';
-    btn.style.pointerEvents = 'auto';
-    return;
-  }
-  
-  btn.textContent = 'Envoi en cours...';
-
-  const orderId = 'LVX-'+Date.now();
-  const order = {
-    order_id: orderId,
-    store: localStorage.getItem('livex_store') || 'H&M',
-    items: items,
-    address: document.getElementById('addrInp').value.trim() || 'Non renseignée',
-    note: document.getElementById('noteInp').value.trim(),
-    status: 'waiting',
-    confirmation: null
-  };
-
-  const { error } = await sb.from('commandes').insert([order]);
-
-  if (error) {
-    alert('Erreur : '+error.message);
-    btn.textContent = 'Confirmer la commande';
-    btn.style.opacity = '1';
-    btn.style.pointerEvents = 'auto';
-    return;
-  }
-
-  localStorage.setItem('livex_order_id', orderId);
-  localStorage.setItem('livex_store', order.store);
-  window.location.href = 'livex-screen3.html';
-}
-</script>
-</body>
-</html>
