@@ -822,6 +822,82 @@ async function searchPriceByRef(id, reference, store) {
     }
   }
 }
+
+async function validateOrderWithAI(items) {
+  const itemNames = items.map(i => i.name || '').filter(Boolean);
+  for (const name of itemNames) {
+    const badWords = ['pipi', 'caca', 'merde', 'fuck', 'shit', 'test123'];
+    if (badWords.some(w => name.toLowerCase().includes(w))) {
+      showValidationError('Commande invalide. Décris un vrai article à acheter.');
+      return false;
+    }
+    const hasOnlyGarbage = /^[^a-zA-ZÀ-ÿ]{4,}$/.test(name);
+    if (hasOnlyGarbage) {
+      showValidationError('Décris ton article correctement.');
+      return false;
+    }
+  }
+  return true;
+}
+
+function showValidationError(msg) {
+  let errBox = document.getElementById('validationErr');
+  if (!errBox) {
+    errBox = document.createElement('div');
+    errBox.id = 'validationErr';
+    errBox.style.cssText = 'position:fixed;bottom:120px;left:50%;transform:translateX(-50%);background:#ef4444;color:#fff;padding:12px 20px;border-radius:14px;font-size:14px;font-weight:600;z-index:999;max-width:300px;text-align:center;box-shadow:0 8px 24px rgba(239,68,68,0.4);';
+    document.body.appendChild(errBox);
+  }
+  errBox.textContent = '⚠️ ' + msg;
+  errBox.style.display = 'block';
+  setTimeout(() => { if(errBox) errBox.style.display = 'none'; }, 3500);
+}
+
+async function doConfirm() {
+  const items = getItems();
+  if (!items.length) return;
+  
+  const btn = document.getElementById('confirmBtn');
+  btn.textContent = 'Vérification...';
+  btn.style.opacity = '0.7';
+  btn.style.pointerEvents = 'none';
+
+  // Validation anti-troll
+  const isValid = await validateOrderWithAI(items);
+  if (!isValid) {
+    btn.textContent = 'Confirmer la commande';
+    btn.style.opacity = '1';
+    btn.style.pointerEvents = 'auto';
+    return;
+  }
+
+  btn.textContent = 'Envoi en cours...';
+
+  const orderId = 'LVX-' + Date.now();
+  const order = {
+    order_id: orderId,
+    store: localStorage.getItem('livex_store') || 'H&M',
+    items: items,
+    address: document.getElementById('addrInp').value.trim() || 'Non renseignée',
+    note: document.getElementById('noteInp')?.value.trim() || '',
+    status: 'waiting',
+    confirmation: null
+  };
+
+  try {
+    const { error } = await sb.from('commandes').insert([order]);
+    if (error) throw error;
+    localStorage.setItem('livex_order_id', orderId);
+    localStorage.setItem('livex_store', order.store);
+    window.location.href = 'livex-screen3.html';
+  } catch(e) {
+    alert('Erreur : ' + (e.message || 'Réessaie.'));
+    btn.textContent = 'Confirmer la commande';
+    btn.style.opacity = '1';
+    btn.style.pointerEvents = 'auto';
+  }
+}
+
 </script>
 </body>
 </html>
