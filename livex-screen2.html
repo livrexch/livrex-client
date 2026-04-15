@@ -363,7 +363,7 @@ document.addEventListener('click', (e) => {
 });
 
 window.addEventListener('load', () => {
-  if (arts.length === 0) { addArt(); addArt(); }
+  if (arts.length === 0) { addArt(); }
   // Pré-remplir l'adresse depuis le profil
   const savedAddr = localStorage.getItem('livex_prefill_addr') || localStorage.getItem('livex_user_addr') || '';
   if (savedAddr) {
