@@ -153,7 +153,7 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
   </div>
   <div class="hdr">
     <div class="hdr-h">Ta commande<br><span>dis-nous tout</span></div>
-    <div class="hdr-sub">Colle le lien de chaque article — on s'occupe du reste.</div>
+    <div class="hdr-sub">Décris l'article et colle le lien de la boutique.</div>
   </div>
   <div class="scroll">
     <div class="sec">
@@ -399,18 +399,17 @@ function addArt() {
       </button>
     </div>
     <input class="art-inp" id="${id}" type="text" 
-      placeholder="Nom, référence ou description..." 
+      placeholder="Ex: T-shirt blanc · Taille M · Coupe slim..." 
       oninput="onChange()"/>
-    <div class="art-hints">
-      <span onclick="fillHint('${id}', 'Ref: ')">+ Ajouter une référence</span>
-    </div>
+
     <!-- Lien URL obligatoire -->
     <div class="art-url-wrap" id="urlWrap${id}">
       <div class="art-url-row">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
         <input type="url" class="art-url-inp" id="urlInp${id}" 
-          placeholder="Lien vers l'article (obligatoire)..." 
-          oninput="onChange(); detectPrice('${id}')"/>
+          placeholder="Lien du site (zara.com, hm.com, globus.ch...)" 
+          oninput="onChange(); validateUrl('${id}'); detectPrice('${id}')"/>
+        <div id="urlErr${id}" style="display:none;font-size:11px;color:#ef4444;margin-top:3px;padding:2px 4px;"></div>
       </div>
       <div id="priceTag${id}" style="display:none;font-size:11px;font-weight:700;color:#059669;padding:4px 10px;background:#ecfdf5;border-radius:20px;width:fit-content;margin-top:4px;"></div>
     </div>`;
@@ -432,6 +431,38 @@ function fillHint(id, text) {
   // Placer le curseur à la fin
   inp.setSelectionRange(inp.value.length, inp.value.length);
   onChange();
+}
+
+// Sites acceptés — boutiques disponibles à Genève
+const ALLOWED_STORES = [
+  'hm.com', 'zara.com', 'globus.ch', 'manor.ch', 
+  'bongeniegrieder.ch', 'bongenie.ch', 'uniqlo.com',
+  'mango.com', 'cos.com', 'weekday.com', 'stories.com',
+  'arket.com', 'pull.bear.com', 'bershka.com', 'massimofutti.com',
+  'calvinklein.com', 'tommy.com', 'lacoste.com', 'ralphlauren.com',
+  'guess.com', 'levi.com', 'nike.com', 'adidas.com', 'newbalance.com',
+  'swatch.com', 'tissot.ch', 'victorinox.com'
+];
+
+function validateUrl(id) {
+  const url = document.getElementById('urlInp'+id)?.value.trim() || '';
+  const errEl = document.getElementById('urlErr'+id);
+  if (!errEl) return;
+  
+  if (!url) { errEl.style.display = 'none'; return; }
+  if (!url.startsWith('http')) { 
+    errEl.style.display = 'block';
+    errEl.textContent = 'Colle un lien complet (commence par https://)';
+    return;
+  }
+  
+  const isAllowed = ALLOWED_STORES.some(store => url.includes(store));
+  if (!isAllowed) {
+    errEl.style.display = 'block';
+    errEl.textContent = "⚠️ Boutique non disponible à Genève pour l'instant";
+  } else {
+    errEl.style.display = 'none';
+  }
 }
 
 function removeArt(id) {
@@ -565,7 +596,7 @@ function getItems() {
       }
     }
     
-    if (!name && !url) return null;
+    if (!name || !url || !url.startsWith('http')) return null;
     return {
       id: arts.indexOf(id),
       name: name || '(voir lien)',
@@ -580,8 +611,11 @@ function isValidOrder() {
   const items = getItems();
   if (!items.length) return false;
   // Au moins 1 article avec du contenu (texte OU photo OU lien)
-  // Au moins 1 article avec URL obligatoire
-  const validItems = items.filter(i => i.url && i.url.startsWith('http'));
+  // Chaque article doit avoir un nom ET une URL
+  const validItems = items.filter(i => 
+    i.name && i.name.length >= 3 && 
+    i.url && i.url.startsWith('http')
+  );
   return validItems.length > 0;
   // L'adresse est verifiee au moment de l'envoi
 }
