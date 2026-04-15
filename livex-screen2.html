@@ -21,7 +21,7 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
 .hdr-h { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.2; color: #0A0A0A; margin-bottom: 5px; }
 .hdr-h span { color: #9AA5BF; font-weight: 300; }
 .hdr-sub { font-size: 13px; color: #9AA5BF; line-height: 1.5; }
-.scroll { flex: 1; overflow-y: auto; padding: 4px 20px 20px; -webkit-overflow-scrolling: touch; min-height: 0; }
+.scroll { flex: 1; overflow-y: auto; padding: 4px 20px 140px; -webkit-overflow-scrolling: touch; min-height: 0; }
 .scroll::-webkit-scrollbar { display: none; }
 .sec { margin-bottom: 16px; }
 .sec-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 0 2px; }
@@ -84,10 +84,13 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
 .btm { 
   background: #fff; 
   border-top: 1px solid #EEF2FF; 
-  padding: 14px 20px calc(18px + env(safe-area-inset-bottom, 16px)); 
-  flex-shrink: 0 !important;
-  min-height: 90px;
+  padding: 14px 20px calc(18px + env(safe-area-inset-bottom, 16px));
   box-shadow: 0 -4px 20px rgba(20,50,168,0.06);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
 }
 .btm-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
 .btm-lbl { font-size: 12px; color: #9AA5BF; font-weight: 500; }
