@@ -40,7 +40,10 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
 .art-del { width: 26px; height: 26px; border-radius: 50%; background: #FEF2F2; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; margin-left: auto; }
 
 /* Champ texte */
-.art-inp { width: 100%; background: #F8FAFC; border: 1.5px solid #E8EDF5; border-radius: 12px; padding: 11px 14px; font-size: 14px; color: #0A0A0A; font-family: inherit; outline: none; caret-color: #0f172a; margin-bottom: 10px; }
+.art-inp { width: 100%; background: #F8FAFC; border: 1.5px solid #E8EDF5; border-radius: 12px; padding: 11px 14px; font-size: 14px; color: #0A0A0A; font-family: inherit; outline: none; caret-color: #0f172a; margin-bottom: 6px; }
+.art-hints { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.art-hints span { background: #EEF2FF; color: #3730a3; border-radius: 20px; padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer; border: 1px solid #c7d2fe; transition: all 0.15s; }
+.art-hints span:active { background: #c7d2fe; transform: scale(0.96); }
 .art-inp:focus { border-color: #0f172a; background: #fff; }
 .art-inp::placeholder { color: #C8D0E8; }
 
@@ -236,7 +239,8 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
 <script>
 const SUPABASE_URL = 'https://lfsrpuphrvwxhnonddru.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxmc3JwdXBocnZ3eGhub25kZHJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MTg4ODQsImV4cCI6MjA5MTQ5NDg4NH0.wPsTGQprpZDu7lJoVKLMwLn-FPS6-WWdF35kvTSyAy8';
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let sb = null;
+try { sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY); } catch(e) { console.warn('Supabase init failed:', e); }
 
 let arts = [], n = 0;
 let currentPhotoTarget = null; // id de l'article en cours de photo
@@ -357,7 +361,7 @@ document.addEventListener('click', (e) => {
 });
 
 window.addEventListener('load', () => {
-  addArt(); addArt();
+  if (arts.length === 0) { addArt(); addArt(); }
   // Pré-remplir l'adresse depuis le profil
   const savedAddr = localStorage.getItem('livex_prefill_addr') || localStorage.getItem('livex_user_addr') || '';
   if (savedAddr) {
@@ -392,7 +396,12 @@ function addArt() {
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
       </button>
     </div>
-    <input class="art-inp" id="${id}" type="text" placeholder="Ex: T-shirt blanc taille M, couleur bleue..." oninput="onChange()"/>
+    <input class="art-inp" id="${id}" type="text" 
+      placeholder="Nom, référence ou description..." 
+      oninput="onChange()"/>
+    <div class="art-hints">
+      <span onclick="fillHint('${id}', 'Ref: ')">+ Ajouter une référence</span>
+    </div>
     <div class="art-options">
       <button class="art-opt-btn" id="photoBtn${id}" onclick="triggerPhoto('${id}')">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
@@ -421,6 +430,21 @@ function addArt() {
   document.getElementById('artList').appendChild(card);
   onChange();
   if (arts.length > 2) setTimeout(() => document.getElementById(id)?.focus(), 120);
+}
+
+function fillHint(id, text) {
+  const inp = document.getElementById(id);
+  if (!inp) return;
+  // Si le champ est vide → mettre le hint, sinon ajouter à la fin
+  if (!inp.value.trim()) {
+    inp.value = text;
+  } else if (!inp.value.includes(text.trim().split(' ')[0])) {
+    inp.value = inp.value.trim() + ' · ' + text;
+  }
+  inp.focus();
+  // Placer le curseur à la fin
+  inp.setSelectionRange(inp.value.length, inp.value.length);
+  onChange();
 }
 
 function removeArt(id) {
@@ -802,3 +826,6 @@ async function searchPriceByRef(id, reference, store) {
     }
   }
 }
+</script>
+</body>
+</html>
