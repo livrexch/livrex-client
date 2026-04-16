@@ -224,6 +224,20 @@ window.addEventListener('load', () => {
     loadOrder();
     // Poll toutes les 5s pour détecter "delivered"
     pollInterval = setInterval(pollDelivered, 5000);
+    // Realtime Supabase pour mise à jour instantanée
+    sb.channel('delivery-' + orderId)
+      .on('postgres_changes', { 
+        event: 'UPDATE', 
+        schema: 'public', 
+        table: 'commandes',
+        filter: 'order_id=eq.' + orderId
+      }, (payload) => {
+        if (payload.new?.status === 'delivered') {
+          clearInterval(pollInterval);
+          markDelivered(payload.new?.delivery_photo || null);
+        }
+      })
+      .subscribe();
   }
 });
 
@@ -255,7 +269,7 @@ async function loadOrder() {
 
 async function pollDelivered() {
   if (!orderId) return;
-  const { data } = await sb.from('commandes').select('status').eq('order_id', orderId).single();
+  const { data } = await sb.from('commandes').select('status, delivery_photo').eq('order_id', orderId).single();
   if (data?.status === 'delivered') {
     clearInterval(pollInterval);
     markDelivered(data?.delivery_photo || null);
@@ -291,6 +305,13 @@ function markDelivered(photo) {
 
   document.getElementById('hdrTitle').textContent = 'Livraison effectuée !';
   document.getElementById('hdrSub').textContent = 'Ton colis est arrivé. Bonne utilisation !';
+  
+  // Bannière verte bien visible
+  const banner = document.createElement('div');
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#059669;color:#fff;text-align:center;padding:16px;font-size:16px;font-weight:700;z-index:999;animation:slideDown 0.4s ease;';
+  banner.textContent = '✅ Livré ! Ton coursier est arrivé.';
+  document.body.appendChild(banner);
+  setTimeout(() => banner.remove(), 4000);
 
   document.getElementById('etaValue').textContent = 'Livré';
   document.getElementById('etaLive').style.background = '#ECFDF5';
