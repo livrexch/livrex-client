@@ -1159,56 +1159,25 @@ async function extractPriceFromUrl(id, url) {
   tag.textContent = 'Recherche prix CHF...';
 
   try {
-    // Claude cherche le vrai prix CHF avec la recherche web
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 200,
-        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        messages: [{
-          role: 'user',
-          content: 'Va sur cette page produit et dis-moi le prix exact en CHF suisse: ' + url + '. Reponds UNIQUEMENT en JSON: {"prix": "CHF XX.XX", "nom": "nom exact du produit"}'
-        }]
-      })
-    });
-
+    // Appel à notre Netlify Function — côté serveur, contourne les blocages
+    const resp = await fetch('/.netlify/functions/get-price?url=' + encodeURIComponent(url));
     const data = await resp.json();
-    // Chercher le texte dans tous les blocs de contenu
-    let resultText = '';
-    for (const block of (data.content || [])) {
-      if (block.type === 'text') resultText += block.text;
-    }
 
-    // Parser le JSON de la réponse
-    const match = resultText.match(/\{"prix"[^}]+\}/);
-    if (match) {
-      const result = JSON.parse(match[0]);
-      if (result.prix && result.prix.includes('CHF')) {
-        const p = parseFloat(result.prix.replace('CHF','').replace(',','.').trim());
-        if (p > 0) {
-          setPriceResult(id, p, result.nom || null, tag);
-          return;
-        }
-      }
-    }
-    
-    // Si Claude n'a pas retourné de JSON propre, chercher "CHF XX" dans la réponse
-    const chfMatch = resultText.match(/CHF\s*(\d+[.,]\d{2})/);
-    if (chfMatch) {
-      const p = parseFloat(chfMatch[1].replace(',','.'));
-      if (p > 10) {
-        setPriceResult(id, p, null, tag);
+    if (data.prix && data.prix.includes('CHF')) {
+      const p = parseFloat(data.prix.replace('CHF','').replace(',','.').trim());
+      if (p > 0) {
+        setPriceResult(id, p, data.nom || null, tag);
         return;
       }
     }
-    
+
     tag.style.color = '#f59e0b';
     tag.textContent = 'Prix non trouvé';
     setTimeout(() => { if(tag) tag.style.display = 'none'; }, 2000);
   } catch(e) {
-    tag.style.display = 'none';
+    tag.style.color = '#f59e0b';
+    tag.textContent = 'Erreur réseau';
+    setTimeout(() => { if(tag) tag.style.display = 'none'; }, 2000);
   }
 }
 
