@@ -205,7 +205,7 @@ async function loadResults() {
     const original = originalItems[i] || originalItems.find(o => o.name === confItem.name) || {};
     return {
       ...confItem,
-      price: original.price || confItem.price || null  // Prix de la commande originale
+      price: confItem.price || original.price || null  // Prix confirmé par le coursier
     };
   });
 
