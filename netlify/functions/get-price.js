@@ -1,4 +1,4 @@
-// Netlify Function — Détection de prix via Claude + web search
+// Netlify Function — Détection de prix via Claude
 exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -20,40 +20,39 @@ exports.handler = async (event) => {
   }
 
   try {
+    // Appel Claude avec web search — sans beta headers
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-beta': 'interleaved-thinking-2025-05-14'
+        'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 300,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
         messages: [{
           role: 'user',
-          content: 'Va sur cette page et dis-moi le prix exact en CHF suisse et le nom du produit: ' + url + '. Reponds uniquement en JSON: {"prix": "CHF XX.XX", "nom": "nom exact"}'
+          content: 'Quel est le prix en CHF suisse de ce produit: ' + url + ' ? Reponds uniquement en JSON: {"prix": "CHF XX.XX", "nom": "nom du produit"}'
         }]
       })
     });
 
     const data = await response.json();
 
-    // Log pour debug
-    console.log('API response status:', response.status);
-    console.log('Content blocks:', JSON.stringify(data.content?.map(b => b.type)));
+    // Debug complet pour voir ce qui se passe
+    if (data.error) {
+      return { statusCode: 200, headers, body: JSON.stringify({ prix: null, nom: null, debug: 'API error: ' + JSON.stringify(data.error) }) };
+    }
 
-    // Chercher le texte dans tous les blocs
+    // Extraire le texte
     let text = '';
     for (const block of (data.content || [])) {
       if (block.type === 'text') text += block.text;
     }
 
-    console.log('Text response:', text.substring(0, 200));
-
-    // Parser le JSON
+    // Parser JSON dans la réponse
     const jsonMatch = text.match(/\{[^{}]*"prix"[^{}]*\}/);
     if (jsonMatch) {
       try {
@@ -67,7 +66,7 @@ exports.handler = async (event) => {
       } catch(e) {}
     }
 
-    // Chercher CHF directement dans le texte
+    // Chercher CHF directement
     const chfMatch = text.match(/CHF\s*(\d+[.,]\d{2})/);
     if (chfMatch) {
       const p = parseFloat(chfMatch[1].replace(',', '.'));
@@ -76,12 +75,7 @@ exports.handler = async (event) => {
       }
     }
 
-    // Retourner l'erreur API si elle existe
-    if (data.error) {
-      return { statusCode: 200, headers, body: JSON.stringify({ prix: null, nom: null, debug: data.error.message }) };
-    }
-
-    return { statusCode: 200, headers, body: JSON.stringify({ prix: null, nom: null, debug: text.substring(0, 100) }) };
+    return { statusCode: 200, headers, body: JSON.stringify({ prix: null, nom: null, debug: text.substring(0, 150) }) };
 
   } catch (error) {
     return { statusCode: 200, headers, body: JSON.stringify({ prix: null, nom: null, error: error.message }) };
