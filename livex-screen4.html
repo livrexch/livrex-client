@@ -176,7 +176,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let timerInterval, totalSeconds = 300, totalAmount = 0;
 const CIRC = 150.8;
-const PRICES = [19.90, 29.90, 24.90, 9.90, 39.90, 14.90, 34.90];
+// Prix pris depuis les items de la commande
 let orderId = localStorage.getItem('livex_order_id');
 
 window.addEventListener('load', () => {
@@ -190,12 +190,27 @@ async function loadResults() {
   if (!orderId) { demoMode(); return; }
   const { data } = await sb.from('commandes').select('*').eq('order_id', orderId).single();
   if (!data) { demoMode(); return; }
-  // Confirmation peut être un objet ou une string JSON
+
+  // Récupérer les items originaux avec leurs prix depuis la commande
+  let originalItems = data.items || [];
+  if (typeof originalItems === 'string') { try { originalItems = JSON.parse(originalItems); } catch(e) { originalItems = []; } }
+
+  // Récupérer la confirmation du coursier (disponibilité)
   let conf = data.confirmation;
   if (typeof conf === 'string') { try { conf = JSON.parse(conf); } catch(e) { conf = null; } }
   if (!conf || !conf.items) { demoMode(); return; }
-  const dispo = conf.items.filter(i => i.status === 'ok');
-  const indispo = conf.items.filter(i => i.status !== 'ok');
+
+  // Fusionner : prendre le statut du coursier + le prix de la commande originale
+  const merged = conf.items.map((confItem, i) => {
+    const original = originalItems[i] || originalItems.find(o => o.name === confItem.name) || {};
+    return {
+      ...confItem,
+      price: original.price || confItem.price || null  // Prix de la commande originale
+    };
+  });
+
+  const dispo = merged.filter(i => i.status === 'ok');
+  const indispo = merged.filter(i => i.status !== 'ok');
   document.getElementById('hdrSub').textContent = dispo.length+' article(s) disponibles sur '+(dispo.length+indispo.length)+' demandés.';
   renderItems(dispo, indispo);
 }
@@ -211,8 +226,10 @@ function renderItems(dispo, indispo) {
   document.getElementById('dispoCount').textContent = dispo.length + (dispo.length <= 1 ? ' article' : ' articles');
   document.getElementById('dispoList').innerHTML = dispo.length > 0
     ? dispo.map((item,i) => {
-        const price = PRICES[i % PRICES.length];
-        return `<div class="item-row"><div class="item-status-ic ic-ok"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg></div><div class="item-body"><div class="item-name">${item.name}</div><div class="item-meta">Disponible ✓</div></div><div class="item-price">CHF ${price.toFixed(2)}</div></div>`;
+        // Utiliser le vrai prix de l'item (détecté depuis le lien)
+        const price = item.price ? parseFloat(item.price.toString().replace('CHF','').replace(',','.').trim()) : null;
+        const priceDisplay = price && price > 0 ? 'CHF ' + price.toFixed(2) : '—';
+        return `<div class="item-row"><div class="item-status-ic ic-ok"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg></div><div class="item-body"><div class="item-name">${item.name}</div><div class="item-meta">Disponible ✓</div></div><div class="item-price">${priceDisplay}</div></div>`;
       }).join('')
     : '<div style="padding:20px;text-align:center;color:#9AA5BF;">Aucun article disponible</div>';
 
@@ -222,14 +239,19 @@ function renderItems(dispo, indispo) {
     document.getElementById('indispoList').innerHTML = indispo.map(item => `
       <div class="item-row"><div class="item-status-ic ic-no"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></div><div class="item-body"><div class="item-name crossed">${item.name}</div><div class="item-meta">Indisponible</div></div><div class="item-price na">—</div></div>`).join('');
   }
-  const subtotal = dispo.reduce((sum,_,i) => sum + PRICES[i % PRICES.length], 0);
+  // Calculer le subtotal depuis les vrais prix des items
+  const subtotal = dispo.reduce((sum, item) => {
+    const p = item.price ? parseFloat(item.price.toString().replace('CHF','').replace(',','.').trim()) : 0;
+    return sum + (p > 0 ? p : 0);
+  }, 0);
+  const hasPrices = dispo.some(item => item.price && parseFloat(item.price.toString().replace('CHF','').replace(',','.').trim()) > 0);
   const comm = parseFloat((subtotal * 0.10).toFixed(2));
   totalAmount = parseFloat((subtotal + 20 + comm).toFixed(2));
-  document.getElementById('subtotal').textContent = 'CHF '+subtotal.toFixed(2);
+  document.getElementById('subtotal').textContent = hasPrices ? 'CHF '+subtotal.toFixed(2) : 'Prix en boutique';
   document.getElementById('commission').textContent = 'CHF '+comm.toFixed(2);
-  document.getElementById('totalFinal').textContent = 'CHF '+totalAmount.toFixed(2);
-  document.getElementById('btmTotal').textContent = 'CHF '+totalAmount.toFixed(2);
-  document.getElementById('mTotal').textContent = 'CHF '+totalAmount.toFixed(2);
+  document.getElementById('totalFinal').textContent = hasPrices ? 'CHF '+totalAmount.toFixed(2) : 'À confirmer';
+  document.getElementById('btmTotal').textContent = hasPrices ? 'CHF '+totalAmount.toFixed(2) : 'À confirmer en boutique';
+  document.getElementById('mTotal').textContent = hasPrices ? 'CHF '+totalAmount.toFixed(2) : 'Montant à confirmer';
 }
 
 function startTimer() {
