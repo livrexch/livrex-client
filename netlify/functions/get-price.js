@@ -1,5 +1,5 @@
-// Netlify Function — Détection de prix CHF
-// Endpoint: /.netlify/functions/get-price?url=https://www.zara.com/...
+// Netlify Function — Détection de prix via Claude AI web search
+// Variables d'environnement requises: ANTHROPIC_API_KEY
 
 exports.handler = async (event) => {
   const headers = {
@@ -16,96 +16,71 @@ exports.handler = async (event) => {
     return { statusCode: 400, headers, body: JSON.stringify({ error: 'URL manquante' }) };
   }
 
-  const browserHeaders = {
-    'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1',
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-    'Accept-Language': 'fr-CH,fr;q=0.9,en;q=0.8',
-    'Accept-Encoding': 'gzip, deflate, br',
-    'Cache-Control': 'max-age=0',
-    'Connection': 'keep-alive',
-    'DNT': '1',
-    'Referer': 'https://www.google.ch/',
-    'Upgrade-Insecure-Requests': '1'
-  };
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Clé API manquante' }) };
+  }
 
   try {
-    // ── ZARA ──────────────────────────────────────
-    if (url.includes('zara.com')) {
-      const pidMatch = url.match(/[/-]p0?(\d{7,9})/i) || url.match(/(\d{8,9})(?:\?|\.html)/);
-      if (pidMatch) {
-        const pid = pidMatch[1].replace(/^0+/, '');
-        const endpoints = [
-          `https://www.zara.com/ch/fr/product/${pid}-p0${pid}.json`,
-          `https://www.zara.com/ch/fr/product/p0${pid}.json`,
-        ];
-        for (const ep of endpoints) {
-          try {
-            const r = await fetch(ep, { headers: { ...browserHeaders, 'Accept': 'application/json', 'Referer': 'https://www.zara.com/ch/fr/' } });
-            if (r.ok) {
-              const data = await r.json();
-              const price = data?.detail?.colors?.[0]?.prices?.[0]?.price || data?.colors?.[0]?.prices?.[0]?.price;
-              const name = data?.detail?.name || data?.name;
-              if (price > 0) {
-                const chf = price > 1000 ? price / 100 : price;
-                return { statusCode: 200, headers, body: JSON.stringify({ prix: 'CHF ' + chf.toFixed(2), nom: name || null }) };
-              }
-            }
-          } catch(e) {}
+    // Claude avec web search — peut accéder à n'importe quel site
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 200,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: [{
+          role: 'user',
+          content: 'Quel est le prix exact en CHF et le nom complet de ce produit sur le site suisse: ' + url + ' ? Reponds UNIQUEMENT en JSON: {"prix": "CHF XX.XX", "nom": "nom exact du produit"}'
+        }]
+      })
+    });
+
+    const data = await response.json();
+    
+    // Extraire le texte de la réponse
+    let text = '';
+    for (const block of (data.content || [])) {
+      if (block.type === 'text') text += block.text;
+    }
+
+    // Parser le JSON dans la réponse
+    const match = text.match(/\{[^}]*"prix"[^}]*\}/);
+    if (match) {
+      try {
+        const result = JSON.parse(match[0]);
+        if (result.prix && result.prix.includes('CHF')) {
+          const price = parseFloat(result.prix.replace('CHF', '').replace(',', '.').trim());
+          if (price > 0) {
+            return {
+              statusCode: 200, headers,
+              body: JSON.stringify({ prix: 'CHF ' + price.toFixed(2), nom: result.nom || null })
+            };
+          }
         }
+      } catch(e) {}
+    }
+
+    // Chercher CHF XX.XX dans la réponse si pas de JSON propre
+    const chfMatch = text.match(/CHF\s*(\d+[.,]\d{2})/);
+    if (chfMatch) {
+      const price = parseFloat(chfMatch[1].replace(',', '.'));
+      if (price > 10) {
+        return {
+          statusCode: 200, headers,
+          body: JSON.stringify({ prix: 'CHF ' + price.toFixed(2), nom: null })
+        };
       }
     }
 
-    // ── Tous les sites ─────────────────────────────
-    const r = await fetch(url, { headers: browserHeaders });
-    const html = await r.text();
-    const result = extractFromHtml(html);
-    return { statusCode: 200, headers, body: JSON.stringify(result) };
+    return { statusCode: 200, headers, body: JSON.stringify({ prix: null, nom: null }) };
 
   } catch (error) {
-    return { statusCode: 200, headers, body: JSON.stringify({ prix: null, nom: null }) };
+    return { statusCode: 200, headers, body: JSON.stringify({ prix: null, nom: null, error: error.message }) };
   }
 };
-
-function extractFromHtml(html) {
-  // JSON-LD
-  const jldBlocks = html.match(/<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi) || [];
-  for (const block of jldBlocks) {
-    try {
-      const obj = JSON.parse(block.replace(/<[^>]*>/g, ''));
-      const items = Array.isArray(obj) ? obj : [obj];
-      for (const item of items) {
-        const offers = item.offers;
-        if (!offers) continue;
-        const offer = Array.isArray(offers) ? offers[0] : offers;
-        const price = parseFloat(offer.price || offer.lowPrice || 0);
-        if (price > 0) return { prix: 'CHF ' + price.toFixed(2), nom: item.name || null };
-      }
-    } catch(e) {}
-  }
-
-  // Meta Open Graph
-  const og = html.match(/property="product:price:amount"[^>]+content="([0-9.,]+)"/i) ||
-             html.match(/content="([0-9.,]+)"[^>]+property="product:price:amount"/i);
-  if (og && parseFloat(og[1]) > 0) {
-    const nameM = html.match(/property="og:title"[^>]+content="([^"]+)"/i);
-    return { prix: 'CHF ' + parseFloat(og[1].replace(',','.')).toFixed(2), nom: nameM?.[1] || null };
-  }
-
-  // Scan CHF (min 15 CHF)
-  const titleM = html.match(/<title[^>]*>([^<|]+)/i);
-  const nom = titleM?.[1]?.trim() || null;
-  const chfList = [];
-  const rgx = /CHF\s*([0-9]+[.,][0-9]{2})/g;
-  let m;
-  while ((m = rgx.exec(html)) !== null) {
-    const v = parseFloat(m[1].replace(',', '.'));
-    if (v >= 15 && v < 5000) chfList.push(v);
-  }
-  if (chfList.length > 0) {
-    const freq = {};
-    chfList.forEach(v => freq[v] = (freq[v]||0)+1);
-    const best = Object.entries(freq).sort((a,b) => b[1]-a[1] || parseFloat(b[0])-parseFloat(a[0]))[0];
-    return { prix: 'CHF ' + parseFloat(best[0]).toFixed(2), nom };
-  }
-  return { prix: null, nom };
-}
