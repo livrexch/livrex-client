@@ -8,207 +8,208 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; background: #F5F7FF; color: #0A0A0A; overflow: hidden; }
-#app { position: fixed; inset: 0; display: flex; flex-direction: column; background: #F5F7FF; overflow: hidden; }
+html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; background: #F0F4FF; color: #0A0A0A; overflow: hidden; }
+#app { position: fixed; inset: 0; display: flex; flex-direction: column; background: #F0F4FF; overflow: hidden; }
+
+/* ── STATUS BAR + NAVBAR ── */
 .sbar { background: #0f172a; padding: 14px 24px 8px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
 .sbar-t { font-size: 15px; font-weight: 600; color: #fff; }
 .topnav { background: #0f172a; padding: 6px 20px 22px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; border-radius: 0 0 28px 28px; }
-.back { width: 38px; height: 38px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; cursor: pointer; }
-.store-pill { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.15); border-radius: 24px; padding: 7px 14px 7px 7px; }
+.back { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.store-pill { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.12); border-radius: 24px; padding: 7px 14px 7px 7px; }
 .pill-ic { width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; }
-.pill-name { font-size: 13px; font-weight: 700; color: #fff; }
-.hdr { padding: 18px 24px 12px; flex-shrink: 0; }
-.hdr-h { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.2; color: #0A0A0A; margin-bottom: 5px; }
-.hdr-h span { color: #9AA5BF; font-weight: 300; }
-.hdr-sub { font-size: 13px; color: #9AA5BF; line-height: 1.5; }
-.scroll { flex: 1; overflow-y: auto; padding: 4px 20px 140px; -webkit-overflow-scrolling: touch; min-height: 0; }
-.scroll::-webkit-scrollbar { display: none; }
-.sec { margin-bottom: 16px; }
-.sec-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; padding: 0 2px; }
-.sec-t { font-size: 10px; font-weight: 700; color: #9AA5BF; letter-spacing: 2.5px; text-transform: uppercase; }
-.sec-cnt { font-size: 11px; font-weight: 700; color: #0f172a; background: #EEF2FF; border-radius: 20px; padding: 2px 9px; }
+.pill-name { color: #fff; font-size: 14px; font-weight: 600; }
 
-/* ARTICLE CARD — nouvelle version avec photo + URL */
+/* ── SCROLL ── */
+.scroll { flex: 1; overflow-y: auto; padding: 20px 16px 140px; -webkit-overflow-scrolling: touch; min-height: 0; }
+
+/* ── HEADER ── */
+.hdr { margin-bottom: 20px; }
+.hdr-h { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; color: #0f172a; margin-bottom: 4px; line-height: 1.2; }
+.hdr-sub { font-size: 13px; color: #94a3b8; }
+
+/* ── SECTIONS ── */
+.sec { margin-bottom: 20px; }
+.sec-hd { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; padding: 0 2px; }
+.sec-t { font-size: 11px; font-weight: 700; color: #64748b; letter-spacing: 1.5px; text-transform: uppercase; }
+.sec-count { font-size: 12px; font-weight: 600; color: #94a3b8; }
+.sec-hint { font-size: 12px; color: #94a3b8; margin-bottom: 10px; padding: 0 2px; }
+
+/* ── ARTICLES CARD ── */
 .art-wrap { background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 2px 16px rgba(20,50,168,0.06); border: 1px solid rgba(20,50,168,0.06); }
-.art-card { border-bottom: 1px solid #F0F4FF; padding: 14px 16px; animation: slideIn 0.22s cubic-bezier(0.34,1.56,0.64,1); }
-.art-card:last-of-type { border-bottom: none; }
-@keyframes slideIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
-
-/* Header de l'article : numéro + supprimer */
+.art-card { padding: 14px 16px; border-bottom: 1px solid #f0f4ff; animation: slideIn 0.22s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes slideIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
 .art-card-hd { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-.art-idx { width: 24px; height: 24px; border-radius: 7px; background: #EEF2FF; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #0f172a; flex-shrink: 0; }
+.art-idx { width: 22px; height: 22px; border-radius: 7px; background: #EEF2FF; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #0f172a; flex-shrink: 0; }
 .art-del { width: 26px; height: 26px; border-radius: 50%; background: #FEF2F2; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; margin-left: auto; }
-
-/* Champ texte */
-.art-inp { width: 100%; background: #F8FAFC; border: 1.5px solid #E8EDF5; border-radius: 12px; padding: 11px 14px; font-size: 14px; color: #0A0A0A; font-family: inherit; outline: none; caret-color: #0f172a; margin-bottom: 6px; }
-.art-hints { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.art-inp { width: 100%; background: #F8FAFC; border: 1.5px solid #E8EDF5; border-radius: 12px; padding: 11px 14px; font-size: 14px; color: #0A0A0A; font-family: inherit; outline: none; caret-color: #0f172a; margin-bottom: 8px; transition: border-color 0.15s; }
+.art-inp:focus { border-color: #0f172a; background: #fff; }
+.art-hints { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
 .art-hints span { background: #EEF2FF; color: #3730a3; border-radius: 20px; padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer; border: 1px solid #c7d2fe; transition: all 0.15s; }
 .art-hints span:active { background: #c7d2fe; transform: scale(0.96); }
-.art-inp:focus { border-color: #0f172a; background: #fff; }
-.art-inp::placeholder { color: #C8D0E8; }
 
-/* Boutons photo + URL */
-.art-options { display: flex; gap: 8px; }
+/* ── URL FIELD ── */
 .art-url-wrap { margin-bottom: 4px; }
-.art-url-row { display: flex; align-items: center; gap: 8px; background: #f8fafc; border: 1.5px solid #E8EDF5; border-radius: 12px; padding: 10px 12px; transition: border-color 0.15s; }
-.art-url-row:focus-within { border-color: #0f172a; background: #fff; }
+.art-url-row { display: flex; align-items: center; gap: 8px; background: #f8fafc; border: 1.5px solid #E8EDF5; border-radius: 12px; padding: 10px 12px; transition: all 0.2s; }
+.art-url-row:focus-within { border-color: #3D5AFE; background: #fafbff; }
+.art-url-row.has-url { border-color: #bbf7d0; background: #f0fdf4; }
 .art-url-inp { flex: 1; background: transparent; border: none; outline: none; font-size: 13px; color: #0f172a; font-family: inherit; caret-color: #0f172a; }
 .art-url-inp::placeholder { color: #C8D0E8; }
+.price-tag { display:none; font-size:11px; font-weight:700; color:#059669; padding:4px 10px; background:#ecfdf5; border-radius:20px; width:fit-content; margin-top:6px; }
 
-/* Prévisualisation photo */
-.art-photo-preview { position: relative; margin-top: 8px; border-radius: 12px; overflow: hidden; }
-.art-photo-preview img { width: 100%; max-height: 120px; object-fit: cover; border-radius: 12px; display: block; }
-.art-photo-del { position: absolute; top: 6px; right: 6px; width: 24px; height: 24px; border-radius: 50%; background: rgba(0,0,0,0.6); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+/* ── ADD BUTTON ── */
+.add-btn { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; transition: background 0.15s; }
+.add-btn:active { background: #f8faff; }
+.add-ic { width: 32px; height: 32px; border-radius: 10px; background: #f0f4ff; border: 1.5px dashed #c7d2fe; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.add-txt { font-size: 14px; font-weight: 600; color: #6366f1; }
 
-/* Prévisualisation URL */
-.art-url-preview { margin-top: 8px; background: #F8FAFC; border: 1.5px solid #E8EDF5; border-radius: 12px; padding: 10px 12px; display: flex; align-items: center; gap: 8px; }
-.art-url-preview input { flex: 1; background: transparent; border: none; outline: none; font-size: 12px; color: #0f172a; font-family: inherit; }
-.art-url-preview input::placeholder { color: #C8D0E8; }
-.art-url-close { width: 20px; height: 20px; border-radius: 50%; background: #EEF2FF; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-
-/* Bouton ajouter article */
-.add-btn { display: flex; align-items: center; gap: 12px; padding: 16px; cursor: pointer; transition: background 0.15s; }
-.add-btn:active { background: #FAFBFF; }
-.add-ic { width: 24px; height: 24px; border-radius: 7px; border: 1.5px dashed #C8D0E8; display: flex; align-items: center; justify-content: center; }
-.add-lbl { font-size: 13px; font-weight: 600; color: #B0BFDC; }
-
-/* Adresse */
-.addr-card { background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 2px 16px rgba(20,50,168,0.06); border: 1px solid rgba(20,50,168,0.06); }
+/* ── ADRESSE ── */
+.addr-card { background: #fff; border-radius: 20px; overflow: visible; box-shadow: 0 2px 16px rgba(20,50,168,0.06); border: 1px solid rgba(20,50,168,0.06); }
 .addr-row { display: flex; align-items: flex-start; gap: 14px; padding: 16px 18px; border-bottom: 1px solid #F0F4FF; }
 .addr-row:last-child { border-bottom: none; }
-.addr-row:focus-within { background: #FAFBFF; }
-.addr-ic { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
-.addr-body { flex: 1; }
-.addr-lbl { font-size: 10px; font-weight: 700; color: #9AA5BF; letter-spacing: 1px; margin-bottom: 5px; text-transform: uppercase; }
-.addr-inp { width: 100%; background: transparent; border: none; outline: none; font-size: 15px; color: #0A0A0A; font-family: inherit; padding: 0; caret-color: #0f172a; }
-.addr-inp::placeholder { color: #C8D0E8; }
-.info-card { background: #EEF2FF; border-radius: 16px; padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start; border: 1px solid #D6E0FF; }
-.info-line { width: 3px; border-radius: 2px; background: #0f172a; flex-shrink: 0; align-self: stretch; min-height: 36px; }
-.info-txt { font-size: 13px; color: #4A6ACA; line-height: 1.6; }
-.info-txt strong { color: #0f172a; font-weight: 700; }
-.btm { 
-  background: #fff; 
-  border-top: 1px solid #EEF2FF; 
-  padding: 14px 20px calc(18px + env(safe-area-inset-bottom, 16px));
-  box-shadow: 0 -4px 20px rgba(20,50,168,0.06);
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-}
-.btm-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.addr-ic { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.addr-body { flex: 1; position: relative; }
+.addr-lbl { font-size: 11px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+.addr-inp { width: 100%; background: transparent; border: none; outline: none; font-size: 14px; color: #0f172a; font-family: inherit; caret-color: #0f172a; padding: 0; }
+.addr-inp::placeholder { color: #CBD5E1; }
+
+/* ── BOTTOM BAR ── */
+.btm { background: #fff; border-top: 1px solid #EEF2FF; padding: 14px 20px calc(18px + env(safe-area-inset-bottom, 16px)); box-shadow: 0 -4px 20px rgba(20,50,168,0.06); position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; }
+.btm-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 .btm-lbl { font-size: 12px; color: #9AA5BF; font-weight: 500; }
 .btm-val { font-size: 13px; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 5px; }
 .cta { width: 100%; border: none; border-radius: 16px; padding: 18px; font-size: 16px; font-weight: 700; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
 .cta.off { background: #EEF2FF; color: #B0BFDC; pointer-events: none; }
-.cta.on { background: #0f172a; color: #fff; box-shadow: 0 6px 24px rgba(20,50,168,0.35); }
+.cta.on { background: #0f172a; color: #fff; box-shadow: 0 6px 24px rgba(15,23,42,0.3); }
 .cta.on:active { transform: scale(0.98); }
 @keyframes slideUp { from { opacity:0; transform:translateX(-50%) translateY(10px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
 @keyframes spin { to { transform: rotate(360deg); } }
-.search-result-item { display:flex; align-items:center; gap:10px; padding:10px 12px; cursor:pointer; border-bottom:1px solid #f1f5f9; transition:background 0.1s; }
-.search-result-item:last-child { border-bottom:none; }
-.search-result-item:hover { background:#f8fafc; }
-.search-result-img { width:48px; height:48px; border-radius:8px; object-fit:cover; flex-shrink:0; background:#f1f5f9; }
-.search-result-info { flex:1; min-width:0; }
-.search-result-name { font-size:13px; font-weight:600; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.search-result-price { font-size:12px; font-weight:700; color:#059669; margin-top:2px; }
-.search-result-ref { font-size:11px; color:#94a3b8; margin-top:1px; }
 
-/* MODAL */
-.overlay { position: fixed; inset: 0; background: rgba(10,30,80,0.5); z-index: 100; display: flex; align-items: flex-end; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(6px); }
-.overlay.on { opacity: 1; pointer-events: all; }
-.modal { background: #fff; border-radius: 28px 28px 0 0; padding: 20px 22px 48px; width: 100%; transform: translateY(100%); transition: transform 0.38s cubic-bezier(0.32,0.72,0,1); }
-.overlay.on .modal { transform: translateY(0); }
-.m-handle { width: 36px; height: 4px; background: #E0E8FF; border-radius: 2px; margin: 0 auto 22px; }
-.m-store { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
-.m-store-ic { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; }
-.m-store-name { font-size: 17px; font-weight: 700; color: #0A0A0A; }
-.m-store-sub { font-size: 12px; color: #9AA5BF; margin-top: 2px; }
-.m-items { background: #F5F7FF; border-radius: 16px; overflow: hidden; margin-bottom: 14px; border: 1px solid #E0E8FF; }
-.m-item { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid #EEF2FF; }
-.m-item:last-child { border-bottom: none; }
-.m-num { width: 20px; height: 20px; border-radius: 6px; background: #EEF2FF; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #0f172a; flex-shrink: 0; }
-.m-item-body { flex: 1; }
-.m-txt { font-size: 13px; color: #0A0A0A; }
-.m-badge { font-size: 10px; font-weight: 600; color: #059669; background: #ECFDF5; border-radius: 20px; padding: 2px 7px; display: inline-block; margin-top: 3px; }
-.m-thumb { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
-.m-fees { background: #F5F7FF; border-radius: 16px; padding: 14px 16px; margin-bottom: 16px; border: 1px solid #E0E8FF; }
-.m-fee { display: flex; justify-content: space-between; padding: 6px 0; }
-.m-fee-l { font-size: 13px; color: #9AA5BF; }
-.m-fee-r { font-size: 13px; font-weight: 600; color: #4A6ACA; }
-.m-div { border: none; border-top: 1px solid #EEF2FF; margin: 8px 0; }
-.m-fee.tot .m-fee-l { color: #0A0A0A; font-weight: 700; font-size: 14px; }
-.m-fee.tot .m-fee-r { color: #0f172a; font-size: 16px; font-weight: 800; }
-.m-note { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 18px; }
-.m-note-txt { font-size: 12px; color: #9AA5BF; line-height: 1.5; }
-.m-cta { width: 100%; background: #0f172a; color: #fff; border: none; border-radius: 14px; padding: 17px; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 6px 20px rgba(20,50,168,0.3); transition: opacity 0.15s; }
-.m-cta:active { opacity: 0.88; }
-.m-cancel { width: 100%; background: transparent; border: 1.5px solid #EEF2FF; border-radius: 14px; padding: 15px; font-size: 14px; font-weight: 600; color: #9AA5BF; font-family: inherit; cursor: pointer; }
+/* ── MODAL ── */
+.overlay { display:none; position:fixed; inset:0; background:rgba(15,23,42,0.5); z-index:200; align-items:flex-end; backdrop-filter: blur(4px); }
+.overlay.on { display:flex; }
+.modal { background:#fff; border-radius:28px 28px 0 0; padding:20px; width:100%; max-height:85vh; overflow-y:auto; }
+.m-handle { width:36px; height:4px; border-radius:2px; background:#E8EDF5; margin:0 auto 20px; }
+.m-store { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+.m-store-ic { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; flex-shrink:0; }
+.m-items { background:#F8FAFC; border-radius:16px; padding:4px 0; margin-bottom:18px; }
+.m-item { display:flex; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid #EEF2FF; }
+.m-item:last-child { border-bottom:none; }
+.m-num { width:20px; height:20px; border-radius:6px; background:#EEF2FF; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; color:#0f172a; flex-shrink:0; }
+.m-item-body { flex:1; }
+.m-txt { font-size:14px; font-weight:600; color:#0f172a; }
+.m-badge { display:inline-block; font-size:10px; font-weight:700; background:#EEF2FF; color:#3D5AFE; padding:2px 8px; border-radius:20px; margin-top:3px; }
+.m-note { display:flex; align-items:flex-start; gap:8px; margin-bottom:18px; }
+.m-pricing { background:#f8fafc; border-radius:16px; padding:14px 16px; margin-bottom:18px; }
+.m-pricing-row { display:flex; justify-content:space-between; font-size:13px; color:#64748b; margin-bottom:8px; }
+.m-pricing-row:last-child { margin-bottom:0; font-size:15px; font-weight:700; color:#0f172a; border-top:1px solid #e2e8f0; padding-top:10px; margin-top:4px; }
+.m-cta { width:100%; background:#0f172a; color:#fff; border:none; border-radius:14px; padding:17px; font-size:15px; font-weight:700; font-family:inherit; cursor:pointer; margin-bottom:10px; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 6px 20px rgba(20,50,168,0.3); transition:opacity 0.15s; }
+.m-cta:active { opacity:0.85; }
+.m-cancel { width:100%; background:none; border:none; color:#9AA5BF; font-size:14px; font-weight:600; font-family:inherit; cursor:pointer; padding:10px; }
+.m-addr { font-size:14px; color:#0f172a; font-weight:500; }
+
+/* ── INFO CARD ── */
+.info-card { background:#fff; border-radius:16px; padding:14px 16px; display:flex; align-items:flex-start; gap:12px; border:1px solid #EEF2FF; }
+.info-txt { font-size:12px; color:#64748b; line-height:1.5; }
+
+/* ── PHOTO PREVIEW ── */
+.art-photo-preview { position:relative; margin-top:8px; border-radius:12px; overflow:hidden; }
+.art-photo-preview img { width:100%; max-height:200px; object-fit:cover; display:block; }
+.art-photo-del { position:absolute; top:6px; right:6px; width:24px; height:24px; border-radius:50%; background:rgba(0,0,0,0.6); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; }
 </style>
 </head>
 <body>
 <div id="app">
-  <div class="sbar"><span class="sbar-t" id="clk">9:41</span></div>
+  <div class="sbar">
+    <span class="sbar-t" id="clk">9:41</span>
+  </div>
   <div class="topnav">
     <div class="back" onclick="history.back()">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="2.5" stroke-linecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
     </div>
-    <div class="store-pill" id="sPill">
+    <div class="store-pill">
       <div class="pill-ic" id="pillIc" style="background:#EEF2FF;color:#3D5AFE;">H&M</div>
       <span class="pill-name" id="pillName">H&M</span>
     </div>
-    <div style="width:38px;"></div>
+    <div style="width:36px;"></div>
   </div>
-  <div class="hdr">
-    <div class="hdr-h">Ta commande<br><span>dis-nous tout</span></div>
-    <div class="hdr-sub">Décris l'article et colle le lien de la boutique.</div>
-  </div>
+
   <div class="scroll">
+    <!-- Header -->
+    <div class="hdr">
+      <div class="hdr-h" id="hdrTitle">Ta commande</div>
+      <div class="hdr-sub">Nom de l'article + lien du produit.</div>
+    </div>
+
+    <!-- Articles -->
     <div class="sec">
-      <div class="sec-hd"><span class="sec-t">Articles</span><span class="sec-cnt" id="cnt">0 article</span></div>
+      <div class="sec-hd">
+        <span class="sec-t">Articles</span>
+        <span class="sec-count" id="cnt">0 article</span>
+      </div>
+      <div class="sec-hint">Le coursier vérifie la dispo et les prix en boutique.</div>
       <div class="art-wrap">
         <div id="artList"></div>
         <div class="add-btn" onclick="addArt()">
-          <div class="add-ic"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#B0BFDC" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
-          <span class="add-lbl">Ajouter un article</span>
+          <div class="add-ic">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          </div>
+          <span class="add-txt">Ajouter un article</span>
         </div>
       </div>
     </div>
+
+    <!-- Livraison -->
     <div class="sec">
-      <div class="sec-hd"><span class="sec-t">Livraison</span></div>
+      <div class="sec-hd">
+        <span class="sec-t">Livraison</span>
+      </div>
       <div class="addr-card" style="overflow:visible;">
         <div class="addr-row" style="position:relative;">
-          <div class="addr-ic" style="background:#EEF8FF;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.2" stroke-linecap="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
-          <div class="addr-body" style="position:relative;">
+          <div class="addr-ic" style="background:#EEF8FF;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.2" stroke-linecap="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div class="addr-body">
             <div class="addr-lbl">Adresse de livraison</div>
-            <input class="addr-inp" id="addrInp" type="text" 
-              placeholder="Ex: Route de Meyrin 24A, Genève..." 
+            <input class="addr-inp" id="addrInp" type="text"
+              placeholder="Ex: Route de Meyrin 24A, Genève..."
               autocomplete="off"
               oninput="onAddrInput(this.value)"
               onkeydown="onAddrKey(event)"/>
-            <!-- Dropdown autocomplétion -->
             <div id="addrDropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:-52px;right:-18px;background:#fff;border-radius:16px;box-shadow:0 8px 32px rgba(15,23,42,0.15);z-index:999;overflow:hidden;border:1px solid #e2e8f0;max-height:220px;overflow-y:auto;"></div>
           </div>
         </div>
-        <div class="addr-row">
-          <div class="addr-ic" style="background:#FFFBEE;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
-          <div class="addr-body"><div class="addr-lbl">Note (optionnel)</div><input class="addr-inp" id="noteInp" type="text" placeholder="Étage, digicode, sonnette..."/></div>
+        <div class="addr-row" style="border-bottom:none;">
+          <div class="addr-ic" style="background:#FFFBEE;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </div>
+          <div class="addr-body">
+            <div class="addr-lbl">Note (optionnel)</div>
+            <input class="addr-inp" id="noteInp" type="text" placeholder="Étage, digicode, sonnette..."/>
+          </div>
         </div>
-      </div>      </div>
-    </div>
-    <div class="sec">
-      <div class="info-card">
-        <div class="info-line"></div>
-        <div class="info-txt"><strong>Paiement après vérification.</strong> Tu ne paies qu'une fois ton coursier en boutique et tes articles confirmés disponibles.</div>
       </div>
     </div>
+
+    <!-- Info paiement -->
+    <div class="sec">
+      <div class="info-card">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3D5AFE" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        <div class="info-txt"><strong>Paiement après vérification.</strong> Tu ne paies qu'une fois le coursier en boutique avec tes prix confirmés.</div>
+      </div>
+    </div>
+
     <div style="height:8px;"></div>
   </div>
+
+  <!-- Bottom bar fixe -->
   <div class="btm">
     <div class="btm-row">
       <span class="btm-lbl">Livraison estimée</span>
-      <span class="btm-val"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>30–45 min · CHF 20</span>
+      <span class="btm-val">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        30–45 min · CHF 20
+      </span>
     </div>
     <button class="cta off" id="ctaBtn" onclick="openModal()">
       Envoyer la commande
@@ -216,6 +217,9 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
     </button>
   </div>
 </div>
+
+<!-- Input file caché -->
+<input type="file" id="photoInput" accept="image/*" style="display:none" onchange="handlePhoto(event)">
 
 <!-- Modal récap -->
 <div class="overlay" id="overlay" onclick="closeOut(event)">
@@ -382,12 +386,16 @@ window.addEventListener('load', () => {
   localStorage.removeItem('livex_prefill_addr');
   const name = localStorage.getItem('livex_store') || 'H&M';
   const s = STORES[name] || STORES['H&M'];
+  // Titre dynamique avec la boutique
+  (document.getElementById('hdrTitle') || {}).textContent = 'Ta commande chez ' + name;
   ['pillIc','mIc'].forEach(id => {
     const el = document.getElementById(id);
     el.style.background = s.bg; el.style.color = s.c; el.textContent = s.abbr;
   });
   document.getElementById('pillName').textContent = name;
   document.getElementById('mName').textContent = name;
+  // Titre dynamique avec nom de la boutique
+  (document.getElementById('hdrTitle') || {}).textContent = 'Ta commande chez ' + name;
   const t = () => {
     const d = new Date();
     document.getElementById('clk').textContent = String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
@@ -408,7 +416,7 @@ function addArt() {
       </button>
     </div>
     <input class="art-inp" id="${id}" type="text" 
-      placeholder="Ex: T-shirt blanc · Taille M · Coupe slim..." 
+      placeholder="Nom, taille, couleur — ex: T-shirt blanc M" 
       oninput="onChange()"/>
 
     <!-- Lien URL de l'article -->
@@ -416,7 +424,7 @@ function addArt() {
       <div class="art-url-row">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
         <input type="url" class="art-url-inp" id="urlInp${id}" 
-          placeholder="Colle le lien de l'article (hm.com, zara.com...)" 
+          placeholder="Lien du produit sur le site" 
           oninput="onChange(); detectPrice('${id}')"/>
       </div>
       <div id="priceTag${id}" style="display:none;font-size:11px;font-weight:700;color:#059669;padding:4px 10px;background:#ecfdf5;border-radius:20px;width:fit-content;margin-top:4px;"></div>
@@ -1204,5 +1212,5 @@ function setPriceResult(id, price, name, tag) {
 }
 
 </script>
-</body>
+
 </html>
