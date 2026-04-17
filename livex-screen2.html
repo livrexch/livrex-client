@@ -165,6 +165,19 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
         <span class="sec-t">Livraison</span>
       </div>
       <div class="addr-card" style="overflow:visible;">
+        <div class="addr-row">
+          <div class="addr-ic" style="background:#F5F0FF;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2.2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div class="addr-body">
+            <div class="addr-lbl">Nom Prénom</div>
+            <input class="addr-inp" id="clientName" type="text"
+              placeholder="Ex: Dupont Jean"
+              autocomplete="name"
+              oninput="onNameInput(this.value)"/>
+            <div id="nameErr" style="display:none;font-size:11px;color:#ef4444;margin-top:4px;"></div>
+          </div>
+        </div>
         <div class="addr-row" style="position:relative;">
           <div class="addr-ic" style="background:#EEF8FF;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.2" stroke-linecap="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -432,6 +445,32 @@ function addArt() {
   document.getElementById('artList').appendChild(card);
   onChange();
   if (arts.length > 2) setTimeout(() => document.getElementById(id)?.focus(), 120);
+}
+
+function onNameInput(val) {
+  const errEl = document.getElementById('nameErr');
+  const parts = val.trim().split(/\s+/);
+  
+  // Valider : au moins 2 mots, chacun min 2 lettres, que des lettres/tirets/apostrophes
+  const validPart = (p) => p.length >= 2 && /^[a-zA-ZÀ-ÿ'-]+$/.test(p);
+  
+  if (val.trim().length === 0) {
+    if (errEl) errEl.style.display = 'none';
+  } else if (parts.length < 2) {
+    if (errEl) { errEl.style.display = 'block'; errEl.textContent = 'Entre ton nom ET prénom — ex: Dupont Jean'; }
+  } else if (!parts.every(validPart)) {
+    if (errEl) { errEl.style.display = 'block'; errEl.textContent = 'Seulement des lettres, pas de chiffres ou pseudo'; }
+  } else {
+    if (errEl) errEl.style.display = 'none';
+  }
+  onChange();
+}
+
+function isNameValid() {
+  const val = document.getElementById('clientName')?.value.trim() || '';
+  const parts = val.split(/\s+/);
+  const validPart = (p) => p.length >= 2 && /^[a-zA-ZÀ-ÿ'-]+$/.test(p);
+  return parts.length >= 2 && parts.every(validPart);
 }
 
 function fillHint(id, text) {
@@ -851,6 +890,10 @@ function isAddressValid() {
   return addr.length >= 5;
 }
 
+function isFormComplete() {
+  return isValidOrder() && isAddressValid() && isNameValid();
+}
+
 function onChange() {
   const items = getItems();
   const valid = isValidOrder();
@@ -877,7 +920,14 @@ function openModal() {
     return;
   }
   
-  // Vérif 2 : adresse obligatoire
+  // Vérif 2 : nom prénom obligatoire
+  if (!isNameValid()) {
+    showValidationError('Entre ton Nom et Prénom pour continuer.');
+    document.getElementById('clientName')?.focus();
+    return;
+  }
+
+  // Vérif 3 : adresse obligatoire
   if (!isAddressValid()) {
     showValidationError('Ajoute ton adresse de livraison pour continuer.');
     document.getElementById('addrInp')?.focus();
@@ -885,6 +935,10 @@ function openModal() {
   }
   
   // Construire le récap
+  // Afficher le nom du client dans le modal
+  const clientNameEl = document.getElementById('mClientName');
+  if (clientNameEl) clientNameEl.textContent = document.getElementById('clientName')?.value.trim() || '';
+  
   document.getElementById('mItems').innerHTML = items.map((item, i) => `
     <div class="m-item">
       <div class="m-num">${i+1}</div>
@@ -1137,6 +1191,7 @@ async function doConfirm() {
   const order = {
     order_id: orderId,
     store: localStorage.getItem('livex_store') || 'H&M',
+    client_name: document.getElementById('clientName')?.value.trim() || '',
     items: items,
     address: document.getElementById('addrInp').value.trim() || 'Non renseignée',
     note: document.getElementById('noteInp')?.value.trim() || '',
@@ -1212,5 +1267,5 @@ function setPriceResult(id, price, name, tag) {
 }
 
 </script>
-
+</body>
 </html>
