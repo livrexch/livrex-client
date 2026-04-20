@@ -1188,12 +1188,12 @@ async function doConfirm() {
   btn.textContent = 'Envoi en cours...';
 
   const orderId = 'LVX-' + Date.now();
+  const clientName = document.getElementById('clientName')?.value.trim() || '';
   const order = {
     order_id: orderId,
     store: localStorage.getItem('livex_store') || 'H&M',
-    client_name: document.getElementById('clientName')?.value.trim() || '',
     items: items,
-    address: document.getElementById('addrInp').value.trim() || 'Non renseignée',
+    address: clientName + ' — ' + (document.getElementById('addrInp').value.trim() || 'Non renseignée'),
     note: document.getElementById('noteInp')?.value.trim() || '',
     status: 'waiting',
     confirmation: null
