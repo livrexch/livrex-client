@@ -101,7 +101,7 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
   <div class="steps">
     <div class="step">
       <div class="step-ic done"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg></div>
-      <div class="step-body"><div class="step-title">Commande envoyée</div><div class="step-desc">Ton coursier a reçu ta demande</div></div>
+      <div class="step-body"><div class="step-title">Commande envoyée</div><div class="step-desc">Ta commande a été transmise</div></div>
     </div>
     <div class="step" id="step2">
       <div class="step-ic active" id="step2ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>
@@ -109,7 +109,7 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
     </div>
     <div class="step">
       <div class="step-ic todo" id="step3ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#B0BFDC" stroke-width="2.5" stroke-linecap="round"><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
-      <div class="step-body"><div class="step-title muted" id="step3title">Livraison</div><div class="step-desc">En attente de confirmation</div></div>
+      <div class="step-body"><div class="step-title muted" id="step3title">Livraison</div><div class="step-desc">En route vers toi</div></div>
     </div>
   </div>
 
@@ -124,7 +124,7 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
     <div class="refresh-wrap">
       <button class="refresh-btn" id="refreshBtn" onclick="checkUpdate()">
         <svg id="refreshIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-        Vérifier les mises à jour
+        Actualiser
       </button>
     </div>
     <div style="height:16px;"></div>
@@ -134,7 +134,7 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
   <div class="bottom-banner" id="bannerResult" style="display:none;">
     <div class="notif-blue">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
-      <div class="notif-txt"><strong>Vérification terminée !</strong> Ton coursier a vérifié tous tes articles. Consulte le résultat !</div>
+      <div class="notif-txt"><strong>Vérification terminée</strong> Ton coursier a vérifié tous tes articles. Consulte le résultat !</div>
     </div>
     <button class="btn-full btn-blue" onclick="window.location.href='livex-screen4.html'">
       Voir le résultat
@@ -146,7 +146,7 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
   <div class="bottom-banner" id="bannerRefused">
     <div class="notif-red">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
-      <div class="notif-red-txt"><strong>Commande refusée.</strong> Aucun coursier disponible n'a pu accepter ta commande pour le moment.</div>
+      <div class="notif-red-txt"><strong>Commande refusée.</strong> Aucun coursier disponiblenible pour le moment.</div>
     </div>
     <button class="btn-full btn-red" style="margin-bottom:10px;" onclick="retryOrder()">
       Réessayer
@@ -299,12 +299,12 @@ function showResult() {
 
 function showRefused(type) {
   document.getElementById('pulseInner').classList.add('red');
-  document.getElementById('statusTitle').textContent = 'Commande refusée ❌';
-  document.getElementById('statusSub').textContent = type === 'no_driver' ? 'Aucun coursier disponible en ce moment.' : 'Le coursier n\'a pas pu accepter ta commande.';
+  document.getElementById('statusTitle').textContent = 'Commande refusée';
+  document.getElementById('statusSub').textContent = type === 'no_driver' ? 'Aucun coursier disponiblenible en ce moment.' : 'Le coursier n\'a pas pu accepter ta commande.';
   document.getElementById('step2ic').className = 'step-ic error';
   document.getElementById('step2ic').innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>`;
   document.getElementById('step2title').className = 'step-title red';
-  document.getElementById('step2title').textContent = type === 'no_driver' ? 'Aucun coursier dispo' : 'Commande refusée';
+  document.getElementById('step2title').textContent = type === 'no_driver' ? 'Aucun coursier disponible' : 'Commande refusée';
   const banner = type === 'no_driver' ? 'bannerNoDriver' : 'bannerRefused';
   document.getElementById(banner).classList.add('show');
   document.getElementById('refreshBtn').parentElement.style.display = 'none';
