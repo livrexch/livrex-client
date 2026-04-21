@@ -113,8 +113,8 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
         </div>
       </div>
-      <div class="hdr-title" id="hdrTitle">Commande confirmée !</div>
-      <div class="hdr-sub" id="hdrSub">Ton paiement a été accepté.<br>Le coursier est en route pour toi.</div>
+      <div class="hdr-title" id="hdrTitle">Livraison en cours</div>
+      <div class="hdr-sub" id="hdrSub">Le coursier est en route vers ton adresse.</div>
     </div>
   </div>
 
@@ -170,19 +170,24 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
       </div>
       <div class="sum-row"><span class="sum-l">Articles livrés</span><span class="sum-r" id="itemCount">—</span></div>
       <div class="sum-row"><span class="sum-l">Livraison</span><span class="sum-r">CHF 20.00</span></div>
-      <div class="sum-row"><span class="sum-l">Moyen de paiement</span><span class="sum-r">Carte •••• 4242</span></div>
+      <div class="sum-row"><span class="sum-l">Moyen de paiement</span><span class="sum-r">Carte bancaire</span></div>
       <div class="sum-row"><span class="sum-l">Total débité</span><span class="sum-r blue" id="totalPaid">CHF —</span></div>
     </div>
 
     <div class="rate-card">
-      <div class="rate-title">Comment était ton expérience ?</div>
-      <div class="rate-sub">Ta note aide à améliorer le service</div>
+      <div class="rate-title">Note ta livraison</div>
+      <div class="rate-sub">Ton avis nous aide à nous améliorer.</div>
       <div class="stars" id="stars">
-        <div class="star" onclick="rate(1)">⭐</div>
-        <div class="star" onclick="rate(2)">⭐</div>
-        <div class="star" onclick="rate(3)">⭐</div>
-        <div class="star" onclick="rate(4)">⭐</div>
-        <div class="star" onclick="rate(5)">⭐</div>
+        <div class="star" onclick="rate(1)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+        <div class="star" onclick="rate(2)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+        <div class="star" onclick="rate(3)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+        <div class="star" onclick="rate(4)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+        <div class="star" onclick="rate(5)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+      </div>
+        <div class="star" onclick="rate(2)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+        <div class="star" onclick="rate(3)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+        <div class="star" onclick="rate(4)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+        <div class="star" onclick="rate(5)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
       </div>
     </div>
     <div style="height:8px;"></div>
@@ -193,7 +198,7 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
       Nouvelle commande
     </button>
-    <span class="share-btn" onclick="shareApp()">Partager LIVREX avec un ami</span>
+    <span class="share-btn" onclick="shareApp()">Partager LIVREX</span>
   </div>
 </div>
 
@@ -256,7 +261,7 @@ async function loadOrder() {
   document.getElementById('itemCount').textContent = itemCount+' article'+(itemCount > 1 ? 's' : '');
 
   // Total simulé
-  const PRICES = [19.90, 29.90, 24.90, 9.90, 39.90, 14.90, 34.90];
+  // Prix pris depuis la commande
   const subtotal = Array.from({length: itemCount}, (_, i) => PRICES[i % PRICES.length]).reduce((a, b) => a + b, 0);
   const total = (subtotal + 20 + subtotal * 0.1).toFixed(2);
   document.getElementById('totalPaid').textContent = 'CHF '+total;
@@ -303,13 +308,13 @@ function markDelivered(photo) {
   document.getElementById('step5title').className = 't-title';
   document.getElementById('step5time').textContent = 'Livré avec succès';
 
-  document.getElementById('hdrTitle').textContent = 'Livraison effectuée !';
-  document.getElementById('hdrSub').textContent = 'Ton colis est arrivé. Bonne utilisation !';
+  document.getElementById('hdrTitle').textContent = 'Livraison effectuée';
+  document.getElementById('hdrSub').textContent = 'Tes articles sont arrivés. Bonne utilisation !';
   
   // Bannière verte bien visible
   const banner = document.createElement('div');
   banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#059669;color:#fff;text-align:center;padding:16px;font-size:16px;font-weight:700;z-index:999;animation:slideDown 0.4s ease;';
-  banner.textContent = '✅ Livré ! Ton coursier est arrivé.';
+  banner.textContent = ' Livré ! Ton coursier est arrivé.';
   document.body.appendChild(banner);
   setTimeout(() => banner.remove(), 4000);
 
