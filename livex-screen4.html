@@ -103,7 +103,7 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
       </div>
       <div class="verified-badge"><div style="width:5px;height:5px;border-radius:50%;background:#4ADE80;"></div>Vérifié en boutique</div>
     </div>
-    <div class="hdr-title">Résultats de<br>ta commande</div>
+    <div class="hdr-title">Résultats de ta commande</div>
     <div class="hdr-sub" id="hdrSub">Voici ce que le coursier a trouvé.</div>
   </div>
   <div class="timer-wrap">
@@ -112,8 +112,8 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
       <div class="timer-num" id="timerNum">5:00</div>
     </div>
     <div class="timer-info">
-      <div class="timer-title" id="timerTitle">Confirme rapidement !</div>
-      <div class="timer-sub" id="timerSub">Le coursier attend. Valide avant l'expiration.</div>
+      <div class="timer-title" id="timerTitle">Tu as 5 minutes pour confirmer</div>
+      <div class="timer-sub" id="timerSub">Le coursier est en boutique et attend ta confirmation.</div>
     </div>
   </div>
   <div class="scroll">
@@ -133,7 +133,7 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
     </div>
     <div class="info-strip">
       <div class="info-dot"></div>
-      <div class="info-t">Tu paies uniquement les articles <strong>disponibles</strong>. Les articles indisponibles ne sont pas facturés.</div>
+      <div class="info-t">Seuls les articles disponibles sont facturés.<strong>disponibles</strong>. Les articles indisponibles ne sont pas facturés.</div>
     </div>
     <div style="height:8px;"></div>
   </div>
@@ -143,7 +143,7 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
       Payer maintenant
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
     </button>
-    <span class="cancel-lnk" onclick="cancelOrder()">Refuser et annuler</span>
+    <span class="cancel-lnk" onclick="cancelOrder()" style="font-size:12px;color:#C0C8D8;">Annuler la commande</span>
   </div>
 </div>
 
@@ -151,20 +151,20 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
 <div class="overlay" id="overlay" onclick="closeOut(event)">
   <div class="modal">
     <div class="m-handle"></div>
-    <div class="m-title">Finalise le paiement</div>
-    <div class="m-sub">Choisis ton moyen de paiement.</div>
+    <div class="m-title">Paiement sécurisé</div>
+    <div class="m-sub">Choisissez votre moyen de paiement.</div>
     <div class="pm sel" id="pm1" onclick="selPM(1)">
       <div class="pm-ic" style="background:#0f172a;color:#fff;">VISA</div>
-      <div><div class="pm-name">Carte bancaire</div><div class="pm-detail">•••• •••• •••• 4242</div></div>
+      <div><div class="pm-name">Carte bancaire</div><div class="pm-detail">•••• •••• ••••</div></div>
       <div class="pm-check" id="c1"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg></div>
     </div>
     <div class="pm" id="pm2" onclick="selPM(2)">
-      <div class="pm-ic" style="background:#000;color:#fff;font-size:14px;">🍎</div>
+      <div class="pm-ic" style="background:#000;color:#fff;font-size:14px;"></div>
       <div><div class="pm-name">Apple Pay</div><div class="pm-detail">Paiement instantané</div></div>
       <div class="pm-check" id="c2"></div>
     </div>
     <div class="m-total"><span style="font-size:14px;font-weight:600;">Total à débiter</span><span style="font-size:16px;font-weight:800;color:#0f172a;" id="mTotal">CHF —</span></div>
-    <button class="m-pay-btn" onclick="confirmPayment()">Confirmer et payer</button>
+    <button class="m-pay-btn" onclick="confirmPayment()">Confirmer le paiement</button>
     <button class="m-cancel" onclick="closeModal()">Annuler</button>
   </div>
 </div>
@@ -264,13 +264,13 @@ function startTimer() {
     prog.style.strokeDashoffset = CIRC * (1 - totalSeconds/300);
     if (totalSeconds <= 60) {
       prog.classList.add('urgent'); num.classList.add('urgent');
-      document.getElementById('timerTitle').textContent = '⚡ Plus que quelques secondes !';
+      document.getElementById('timerTitle').textContent = 'Plus que quelques secondes !';
     }
     if (totalSeconds <= 0) {
       clearInterval(timerInterval);
       num.textContent = '0:00';
       document.getElementById('timerTitle').textContent = 'Temps expiré';
-      document.getElementById('timerSub').textContent = 'La commande a été annulée.';
+      document.getElementById('timerSub').textContent = 'Délai expiré. La commande a été annulée.';
       document.getElementById('payBtn').className = 'pay-btn expired';
       document.getElementById('payBtn').textContent = 'Délai expiré';
       // Notifier Supabase que le timer a expiré
