@@ -944,7 +944,7 @@ function openModal() {
       <div class="m-num">${i+1}</div>
       <div class="m-item-body">
         <div class="m-txt">${item.name || 'Article ' + (i+1)}</div>
-        ${item.price ? '<span class="m-badge" style="background:#ecfdf5;color:#059669;">💰 ' + item.price + '</span>' : ''}
+        ${item.price ? '<span class="m-badge" style="background:#ecfdf5;color:#059669;">' + item.price + '</span>' : ''}
         ${item.url ? '<span class="m-badge">Lien joint</span>' : ''}
       </div>
     </div>`).join('');
@@ -1021,7 +1021,7 @@ async function detectPriceFromPhoto(id, base64Image) {
     // Construire l'affichage selon ce qui a été détecté
     let tagParts = [];
     if (result.prix && result.prix !== 'null') {
-      tagParts.push('💰 ' + result.prix);
+      tagParts.push('' + result.prix);
       prixParArticle[id] = parseFloat(result.prix.replace('CHF','').replace(',','.').trim()) || 0;
     }
     if (result.nom && result.nom !== 'null') {
@@ -1104,7 +1104,7 @@ async function searchPriceByRef(id, reference, store) {
       if (priceNum > 0) {
         if (priceTag) {
           priceTag.style.background = 'rgba(5,150,105,0.92)';
-          priceTag.textContent = '💰 ' + result.prix;
+          priceTag.textContent = '' + result.prix;
         }
         if (imgEl) {
           imgEl.dataset.price = result.prix;
@@ -1206,7 +1206,7 @@ async function doConfirm() {
     localStorage.setItem('livex_store', order.store);
     window.location.href = 'livex-screen3.html';
   } catch(e) {
-    alert('Erreur : ' + (e.message || 'Réessaie.'));
+    showValidationError('Erreur lors de l\'envoi : ' + (e.message || 'Réessaie.'));
     btn.textContent = 'Confirmer la commande';
     btn.style.opacity = '1';
     btn.style.pointerEvents = 'auto';
@@ -1250,7 +1250,7 @@ function setPriceResult(id, price, name, tag) {
   if (tag) {
     tag.style.display = 'block';
     tag.style.color = '#059669';
-    tag.textContent = '💰 ' + priceStr;
+    tag.textContent = priceStr;
   }
   const urlInp = document.getElementById('urlInp'+id);
   if (urlInp) urlInp.dataset.price = priceStr;
