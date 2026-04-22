@@ -8,8 +8,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; background: #F5F7FF; color: #0A0A0A; overflow: hidden; }
-#app { position: fixed; inset: 0; display: flex; flex-direction: column; background: #F5F7FF; overflow: hidden; }
+html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; background: #F0F4FF; color: #0A0A0A; overflow: hidden; }
+#app { position: fixed; inset: 0; display: flex; flex-direction: column; background: #F0F4FF; overflow: hidden; }
 .sbar { background: #0f172a; padding: 14px 24px 8px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
 .sbar-t { font-size: 15px; font-weight: 600; color: #fff; }
 .hdr { background: #0f172a; padding: 10px 24px 24px; border-radius: 0 0 28px 28px; flex-shrink: 0; }
@@ -42,7 +42,7 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
 .badge-ok { background: #ECFDF5; color: #059669; }
 .badge-no { background: #FEF2F2; color: #DC2626; }
 .items-card { background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 2px 16px rgba(20,50,168,0.06); border: 1px solid rgba(20,50,168,0.06); }
-.item-row { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-bottom: 1px solid #F5F7FF; }
+.item-row { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-bottom: 1px solid #F0F4FF; }
 .item-row:last-child { border-bottom: none; }
 .item-status-ic { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 .ic-ok { background: #ECFDF5; }
@@ -54,7 +54,7 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
 .item-price { font-size: 14px; font-weight: 700; color: #0f172a; flex-shrink: 0; }
 .item-price.na { color: #D1D5DB; font-weight: 400; font-size: 12px; }
 .total-card { background: #fff; border-radius: 20px; padding: 16px 18px; margin-bottom: 16px; box-shadow: 0 2px 16px rgba(20,50,168,0.06); border: 1px solid rgba(20,50,168,0.06); }
-.total-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid #F5F7FF; }
+.total-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid #F0F4FF; }
 .total-row:last-child { border-bottom: none; }
 .total-l { font-size: 13px; color: #9AA5BF; }
 .total-r { font-size: 13px; font-weight: 600; color: #4A6ACA; }
@@ -79,14 +79,14 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
 .m-handle { width: 36px; height: 4px; background: #E0E8FF; border-radius: 2px; margin: 0 auto 22px; }
 .m-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
 .m-sub { font-size: 13px; color: #9AA5BF; margin-bottom: 22px; }
-.pm { background: #F5F7FF; border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 14px; border: 1.5px solid #E0E8FF; cursor: pointer; }
+.pm { background: #F0F4FF; border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 14px; border: 1.5px solid #E0E8FF; cursor: pointer; }
 .pm.sel { border-color: #0f172a; background: #EEF2FF; }
 .pm-ic { width: 38px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; flex-shrink: 0; }
 .pm-name { font-size: 14px; font-weight: 600; color: #0A0A0A; }
 .pm-detail { font-size: 12px; color: #9AA5BF; margin-top: 2px; }
 .pm-check { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #D0D8F0; display: flex; align-items: center; justify-content: center; margin-left: auto; flex-shrink: 0; }
 .pm.sel .pm-check { background: #0f172a; border-color: #0f172a; }
-.m-total { display: flex; justify-content: space-between; background: #F5F7FF; border-radius: 12px; padding: 14px 16px; margin-bottom: 18px; border: 1px solid #E0E8FF; }
+.m-total { display: flex; justify-content: space-between; background: #F0F4FF; border-radius: 12px; padding: 14px 16px; margin-bottom: 18px; border: 1px solid #E0E8FF; }
 .m-pay-btn { width: 100%; background: #0f172a; color: #fff; border: none; border-radius: 14px; padding: 17px; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; margin-bottom: 10px; box-shadow: 0 6px 20px rgba(20,50,168,0.3); display: flex; align-items: center; justify-content: center; gap: 8px; }
 .m-pay-btn:active { opacity: 0.88; }
 .m-cancel { width: 100%; background: transparent; border: 1.5px solid #EEF2FF; border-radius: 14px; padding: 15px; font-size: 14px; font-weight: 600; color: #9AA5BF; font-family: inherit; cursor: pointer; }
@@ -283,7 +283,7 @@ function startTimer() {
 
 function openPayment() { 
   if (totalSeconds <= 0) {
-    alert('Le délai de paiement est expiré.');
+    console.error('Le délai de paiement est expiré.');
     return;
   }
   document.getElementById('overlay').classList.add('on'); 
