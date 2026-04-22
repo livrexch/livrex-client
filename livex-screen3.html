@@ -8,8 +8,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; background: #F5F7FF; color: #0A0A0A; overflow: hidden; }
-#app { position: fixed; inset: 0; display: flex; flex-direction: column; background: #F5F7FF; overflow: hidden; }
+html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; background: #F0F4FF; color: #0A0A0A; overflow: hidden; }
+#app { position: fixed; inset: 0; display: flex; flex-direction: column; background: #F0F4FF; overflow: hidden; }
 .sbar { background: #0f172a; padding: 14px 24px 8px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
 .sbar-t { font-size: 15px; font-weight: 600; color: #fff; }
 .hdr { background: #0f172a; padding: 10px 24px 28px; border-radius: 0 0 28px 28px; flex-shrink: 0; }
@@ -49,7 +49,7 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
 .recap-card { background: #fff; border-radius: 20px; overflow: hidden; margin-top: 20px; box-shadow: 0 2px 16px rgba(20,50,168,0.06); border: 1px solid rgba(20,50,168,0.06); }
 .recap-hd { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid #F0F4FF; }
 .recap-hd-l { font-size: 13px; font-weight: 700; color: #0A0A0A; }
-.store-mini { display: flex; align-items: center; gap: 6px; background: #F5F7FF; border-radius: 20px; padding: 4px 10px 4px 4px; }
+.store-mini { display: flex; align-items: center; gap: 6px; background: #F0F4FF; border-radius: 20px; padding: 4px 10px 4px 4px; }
 .store-mini-ic { width: 20px; height: 20px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 8px; font-weight: 800; }
 .store-mini-name { font-size: 11px; font-weight: 700; color: #4A6ACA; }
 .recap-item { display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-bottom: 1px solid #F8F9FF; }
@@ -254,7 +254,7 @@ function handleStatus(status, data) {
       break;
     case 'accepted':
       document.getElementById('statusTitle').textContent = 'Coursier en route';
-      document.getElementById('statusSub').textContent = 'Un coursier a accepté ta commande et se rend en boutique.';
+      document.getElementById('statusSub').textContent = 'Un coursier a accepté ta commande — arrivée estimée sous 30 à 45 min.';
       document.getElementById('step2title').textContent = 'Vérification en cours';
       document.getElementById('step2ic').className = 'step-ic active';
       break;
@@ -273,6 +273,21 @@ function handleStatus(status, data) {
     case 'delivered':
       showResult();
       break;
+  }
+}
+
+async function cancelOrder() {
+  if (!orderId) return;
+  const ok = confirm('Annuler la commande ?');
+  if (!ok) return;
+  try {
+    await sb.from('commandes').update({ status: 'cancelled' }).eq('order_id', orderId);
+    localStorage.removeItem('livex_order_id');
+    window.location.href = 'index.html';
+  } catch(e) {
+    // Rediriger quand même
+    localStorage.removeItem('livex_order_id');
+    window.location.href = 'index.html';
   }
 }
 
