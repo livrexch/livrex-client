@@ -996,6 +996,105 @@ function filterStores(val) {
     r.style.display = !v || r.querySelector('.store-name').textContent.toLowerCase().includes(v) ? 'flex' : 'none';
   });
 }
+
+
+// ── HORAIRES BOUTIQUES GENÈVE (basés sur Google) ──
+const STORE_HOURS = {
+  'H&M': {
+    0: null,                  // Dimanche fermé
+    1: [9,0,  19,0],         // Lundi
+    2: [9,0,  19,0],         // Mardi
+    3: [9,0,  19,0],         // Mercredi
+    4: [9,0,  20,0],         // Jeudi
+    5: [9,0,  19,30],        // Vendredi
+    6: [9,0,  18,0],         // Samedi
+  },
+  'Zara': {
+    0: null,
+    1: [9,30, 19,0],
+    2: [9,30, 19,0],
+    3: [9,30, 19,0],
+    4: [9,30, 21,0],
+    5: [9,30, 19,30],
+    6: [9,0,  18,0],
+  },
+  'Globus': {
+    0: null,
+    1: [9,0,  19,0],
+    2: [9,0,  19,0],
+    3: [9,0,  19,0],
+    4: [9,0,  21,0],
+    5: [9,0,  19,30],
+    6: [9,0,  18,0],
+  },
+  'Manor': {
+    0: null,
+    1: [9,0,  19,0],
+    2: [9,0,  19,0],
+    3: [9,0,  19,0],
+    4: [9,0,  21,0],
+    5: [9,0,  19,30],
+    6: [8,30, 18,0],
+  },
+  'Bongénie': {
+    0: null,
+    1: [9,30, 19,0],
+    2: [9,30, 19,0],
+    3: [9,30, 19,0],
+    4: [9,30, 20,0],
+    5: [9,30, 19,0],
+    6: [9,30, 18,0],
+  },
+};
+
+function isStoreOpen(storeName) {
+  const hours = STORE_HOURS[storeName];
+  if (!hours) return false;
+  const genevaTime = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Zurich' }));
+  const day = genevaTime.getDay();
+  const todayHours = hours[day];
+  if (!todayHours) return false;
+  const now = genevaTime.getHours() * 60 + genevaTime.getMinutes();
+  const open = todayHours[0] * 60 + todayHours[1];
+  const close = todayHours[2] * 60 + todayHours[3];
+  return now >= open && now < close;
+}
+
+function getStoreCloseTime(storeName) {
+  const hours = STORE_HOURS[storeName];
+  if (!hours) return '';
+  const genevaTime = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Zurich' }));
+  const day = genevaTime.getDay();
+  const todayHours = hours[day];
+  if (!todayHours) return '';
+  return todayHours[2] + 'h' + (todayHours[3] > 0 ? todayHours[3].toString().padStart(2,'0') : '');
+}
+
+function updateStoreStatuses() {
+  document.querySelectorAll('.store[onclick]').forEach(store => {
+    const match = (store.getAttribute('onclick') || '').match(/goStore\('([^']+)'\)/);
+    if (!match) return;
+    const name = match[1];
+    const badge = store.querySelector('.store-open');
+    if (!badge) return;
+    const open = isStoreOpen(name);
+    const closeTime = getStoreCloseTime(name);
+    if (open) {
+      badge.innerHTML = '<div class="store-open-dot"></div>Ouvert jusqu\'à ' + closeTime;
+      badge.style.color = '#16a34a';
+      badge.style.background = '#f0fdf4';
+    } else {
+      badge.innerHTML = '<div class="store-open-dot" style="background:#dc2626;animation:none;"></div>Fermé';
+      badge.style.color = '#dc2626';
+      badge.style.background = '#fef2f2';
+    }
+  });
+}
+
+// Lancer au chargement + toutes les minutes
+document.addEventListener('DOMContentLoaded', updateStoreStatuses);
+setInterval(updateStoreStatuses, 60000);
+
 </script>
 </body>
 </html>
