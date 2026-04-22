@@ -168,7 +168,7 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
         <span class="sum-hd-l">Récapitulatif</span>
         <span class="sum-hd-r" id="storeLabel">H&M · Genève</span>
       </div>
-      <div class="sum-row"><span class="sum-l">Articles livrés</span><span class="sum-r" id="itemCount">—</span></div>
+      <div class="sum-row"><span class="sum-l">Articles livrés</span><span class="sum-r" id="itemCount">0 article</span></div>
       <div class="sum-row"><span class="sum-l">Livraison</span><span class="sum-r">CHF 20.00</span></div>
       <div class="sum-row"><span class="sum-l">Moyen de paiement</span><span class="sum-r">Carte bancaire</span></div>
       <div class="sum-row"><span class="sum-l">Total débité</span><span class="sum-r blue" id="totalPaid">CHF —</span></div>
@@ -184,16 +184,23 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
         <div class="star" onclick="rate(4)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
         <div class="star" onclick="rate(5)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
       </div>
-        <div class="star" onclick="rate(2)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
-        <div class="star" onclick="rate(3)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
-        <div class="star" onclick="rate(4)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
-        <div class="star" onclick="rate(5)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+        
       </div>
     </div>
     <div style="height:8px;"></div>
+    <!-- Boutons en bas du scroll -->
+    <div style="padding:0 0 16px;">
+      <button class="new-order-btn" onclick="newOrder()" style="width:100%;margin-bottom:10px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Nouvelle commande
+      </button>
+      <div style="text-align:center;">
+        <span class="share-btn" onclick="shareApp()">Partager LIVREX</span>
+      </div>
+    </div>
   </div>
 
-  <div class="btm">
+  <div style="display:none;" id="_removed_btm">
     <button class="new-order-btn" onclick="newOrder()">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
       Nouvelle commande
@@ -262,9 +269,16 @@ async function loadOrder() {
 
   // Total simulé
   // Prix pris depuis la commande
-  const subtotal = Array.from({length: itemCount}, (_, i) => PRICES[i % PRICES.length]).reduce((a, b) => a + b, 0);
-  const total = (subtotal + 20 + subtotal * 0.1).toFixed(2);
-  document.getElementById('totalPaid').textContent = 'CHF '+total;
+  // Total depuis les vrais prix de la confirmation
+  const totalPaidEl = document.getElementById('totalPaid');
+  if (totalPaidEl) {
+    if (subtotal > 0) {
+      const total = (subtotal + 20 + subtotal * 0.1).toFixed(2);
+      totalPaidEl.textContent = 'CHF ' + total;
+    } else {
+      totalPaidEl.textContent = 'CHF —';
+    }
+  }
 
   // Vérifier si déjà delivered
   if (data.status === 'delivered') {
