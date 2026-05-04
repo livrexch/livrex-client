@@ -301,6 +301,11 @@ async function autoPoll() {
   try {
     const { data, error } = await sb.from('commandes').select('status,confirmation,items,store,address').eq('order_id', orderId).single();
     if (error || !data) return;
+    // Afficher chat si commande active
+    if (['accepted','confirmed','paid','delivered'].includes(data.status)) {
+      const chatBtnLoad = document.getElementById('chatOpenBtn');
+      if (chatBtnLoad) { chatBtnLoad.style.display = 'flex'; initChatNotif(); }
+    }
     if (data.status === 'confirmed' || data.status === 'paid' || data.confirmation) {
       clearInterval(pollInterval);
       showResult();
@@ -338,20 +343,28 @@ function renderOrder(data) {
 }
 
 function handleStatus(status, data) {
+  // Afficher le bouton chat dès que commande active
+  if (['accepted','confirmed','paid','delivered'].includes(status)) {
+    const chatBtn = document.getElementById('chatOpenBtn');
+    if (chatBtn && chatBtn.style.display !== 'flex') { 
+      chatBtn.style.display = 'flex'; 
+      initChatNotif(); 
+    }
+  }
   switch(status) {
     case 'waiting':
       document.getElementById('statusTitle').textContent = 'En attente d\'un coursier';
       document.getElementById('statusSub').textContent = 'Nous cherchons un coursier disponible pour ta commande.';
       break;
-    case 'accepted':
+    case 'accepted': {
       document.getElementById('statusTitle').textContent = 'Coursier en route';
       document.getElementById('statusSub').textContent = 'Un coursier a accepté ta commande — arrivée estimée sous 30 à 45 min.';
-      const chatBtn = document.getElementById('chatOpenBtn'); if (chatBtn) { chatBtn.style.display = 'flex'; initChatNotif(); }
-      if (chatBtn) chatBtn.style.display = 'flex';
-      initChatListener();
+      const chatBtnA = document.getElementById('chatOpenBtn');
+      if (chatBtnA) { chatBtnA.style.display = 'flex'; initChatNotif(); }
       document.getElementById('step2title').textContent = 'Vérification en cours';
       document.getElementById('step2ic').className = 'step-ic active';
       break;
+    }
     case 'refused':
     case 'no_driver':
       showRefused(status);
