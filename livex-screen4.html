@@ -90,6 +90,51 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
 .m-pay-btn { width: 100%; background: #0f172a; color: #fff; border: none; border-radius: 14px; padding: 17px; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; margin-bottom: 10px; box-shadow: 0 6px 20px rgba(20,50,168,0.3); display: flex; align-items: center; justify-content: center; gap: 8px; }
 .m-pay-btn:active { opacity: 0.88; }
 .m-cancel { width: 100%; background: transparent; border: 1.5px solid #EEF2FF; border-radius: 14px; padding: 15px; font-size: 14px; font-weight: 600; color: #9AA5BF; font-family: inherit; cursor: pointer; }
+
+.chat-btn { display:flex; align-items:center; gap:8px; background:#fff; border:1.5px solid #e2e8f0; border-radius:14px; padding:12px 18px; font-size:14px; font-weight:600; color:#0f172a; font-family:inherit; cursor:pointer; width:100%; box-shadow:0 2px 8px rgba(20,50,168,0.06); transition:all 0.15s; position:relative; }
+.chat-btn:active { transform:scale(0.98); }
+.chat-badge { position:absolute; top:-6px; right:-6px; background:#ef4444; color:#fff; border-radius:50%; width:20px; height:20px; font-size:11px; font-weight:700; display:none; align-items:center; justify-content:center; }
+.chat-badge.on { display:flex; }
+.chat-overlay { display:none; position:fixed; inset:0; background:rgba(15,23,42,0.5); z-index:500; backdrop-filter:blur(4px); align-items:flex-end; }
+.chat-overlay.on { display:flex; }
+.chat-modal { background:#fff; border-radius:28px 28px 0 0; width:100%; height:88vh; display:flex; flex-direction:column; animation:chatSlide 0.3s cubic-bezier(0.34,1.1,0.64,1); }
+@keyframes chatSlide { from { transform:translateY(100%); } to { transform:translateY(0); } }
+.chat-handle { width:36px; height:4px; background:#e2e8f0; border-radius:2px; margin:12px auto 0; flex-shrink:0; }
+.chat-hdr { padding:12px 20px 14px; border-bottom:1px solid #f0f4ff; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+.chat-title { font-size:16px; font-weight:700; color:#0f172a; }
+.chat-close-btn { width:32px; height:32px; border-radius:50%; background:#f1f5f9; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+.chat-msgs { flex:1; overflow-y:auto; padding:14px 16px; display:flex; flex-direction:column; gap:8px; -webkit-overflow-scrolling:touch; }
+.chat-empty { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#94a3b8; text-align:center; gap:10px; padding:40px; }
+.chat-empty svg { opacity:0.35; }
+.chat-empty p { font-size:14px; font-weight:500; margin:0; }
+.chat-empty span { font-size:12px; opacity:0.7; }
+.chat-day { text-align:center; font-size:11px; color:#94a3b8; font-weight:600; margin:4px 0; }
+.chat-wrap { display:flex; flex-direction:column; }
+.chat-wrap.me { align-items:flex-end; }
+.chat-wrap.them { align-items:flex-start; }
+.chat-lbl { font-size:11px; font-weight:600; color:#64748b; margin-bottom:3px; padding:0 4px; }
+.chat-bubble { max-width:80%; padding:10px 14px; border-radius:18px; font-size:14px; line-height:1.45; word-break:break-word; }
+.chat-wrap.me .chat-bubble { background:#0f172a; color:#fff; border-bottom-right-radius:4px; }
+.chat-wrap.them .chat-bubble { background:#f0f4ff; color:#0f172a; border-bottom-left-radius:4px; }
+.chat-bubble img { width:100%; max-width:200px; border-radius:12px; display:block; margin-top:4px; cursor:pointer; }
+.chat-ts { font-size:10px; color:#94a3b8; margin-top:2px; padding:0 4px; }
+.chat-footer { border-top:1px solid #f0f4ff; padding:10px 14px calc(14px + env(safe-area-inset-bottom,0px)); display:flex; align-items:flex-end; gap:8px; flex-shrink:0; }
+.chat-input-wrap { flex:1; background:#f8fafc; border:1.5px solid #e2e8f0; border-radius:22px; padding:10px 14px; display:flex; align-items:flex-end; gap:8px; transition:border-color 0.15s; }
+.chat-input-wrap:focus-within { border-color:#0f172a; background:#fff; }
+.chat-ta { flex:1; background:none; border:none; outline:none; font-size:14px; color:#0f172a; font-family:inherit; resize:none; max-height:80px; min-height:20px; line-height:1.4; }
+.chat-ta::placeholder { color:#C8D0E8; }
+.chat-photo-ic { background:none; border:none; cursor:pointer; color:#94a3b8; display:flex; padding:0; flex-shrink:0; }
+.chat-photo-ic:active { color:#0f172a; }
+.chat-send { width:42px; height:42px; border-radius:50%; background:#0f172a; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.15s; box-shadow:0 3px 10px rgba(15,23,42,0.25); }
+.chat-send:disabled { background:#e2e8f0; box-shadow:none; cursor:default; }
+.chat-send:not(:disabled):active { transform:scale(0.93); }
+.chat-prev-wrap { position:relative; flex-shrink:0; }
+.chat-prev-wrap img { width:44px; height:44px; border-radius:10px; object-fit:cover; display:block; }
+.chat-prev-del { position:absolute; top:-6px; right:-6px; width:18px; height:18px; border-radius:50%; background:#ef4444; border:none; cursor:pointer; color:#fff; font-size:10px; line-height:18px; text-align:center; }
+.chat-full { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:999; align-items:center; justify-content:center; }
+.chat-full.on { display:flex; }
+.chat-full img { max-width:94vw; max-height:88vh; border-radius:14px; }
+.chat-full-close { position:absolute; top:20px; right:20px; background:rgba(255,255,255,0.2); border:none; border-radius:50%; width:38px; height:38px; cursor:pointer; color:#fff; font-size:20px; display:flex; align-items:center; justify-content:center; }
 </style>
 </head>
 <body>
@@ -136,6 +181,13 @@ html, body { width: 100%; height: 100%; font-family: -apple-system, BlinkMacSyst
       <div class="info-t">Seuls les articles disponibles sont facturés.<strong>disponibles</strong>. Les articles indisponibles ne sont pas facturés.</div>
     </div>
     <div style="height:8px;"></div>
+  </div>
+  <div style="padding:0 20px 10px;">
+    <button class="chat-btn" onclick="openChat()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Contacter le coursier
+      <span class="chat-badge" id="chatBadge"></span>
+    </button>
   </div>
   <div class="btm">
     <div class="btm-amount"><span class="btm-lbl">Total à payer maintenant</span><span class="btm-val" id="btmTotal">CHF —</span></div>
@@ -319,6 +371,226 @@ async function cancelOrder() {
     localStorage.removeItem('livex_order_id');
     window.location.href = 'index.html';
   }
+}
+</script>
+
+<div class="chat-overlay" id="chatOverlay" onclick="closeChatOutside(event)">
+  <div class="chat-modal">
+    <div class="chat-handle"></div>
+    <div class="chat-hdr">
+      <div class="chat-title">Contacter le coursier</div>
+      <button class="chat-close-btn" onclick="closeChat()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="chat-msgs" id="chatMsgs">
+      <div class="chat-empty" id="chatEmpty">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <p>Aucun message</p>
+        <span>Pose une question à ton coursier</span>
+      </div>
+    </div>
+    <div class="chat-footer">
+      <div class="chat-input-wrap">
+        <div id="chatPreview" style="display:none;" class="chat-prev-wrap">
+          <img id="chatPreviewImg" src="" alt="">
+          <button class="chat-prev-del" onclick="clearChatPhoto()">×</button>
+        </div>
+        <textarea class="chat-ta" id="chatInput" placeholder="Envoie un message..." rows="1"
+          oninput="chatInputChange()" onkeydown="chatKeyDown(event)"></textarea>
+        <button class="chat-photo-ic" onclick="triggerChatPhoto()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+        </button>
+      </div>
+      <button class="chat-send" id="chatSendBtn" onclick="sendChatMsg()" disabled>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="chat-full" id="chatFull" onclick="this.classList.remove('on')">
+  <button class="chat-full-close" onclick="document.getElementById('chatFull').classList.remove('on')">×</button>
+  <img id="chatFullImg" src="" alt="">
+</div>
+<input type="file" id="chatPhotoInput" accept="image/*" capture="environment" style="display:none" onchange="handleChatPhoto(event)">
+
+<script>
+// ═══ LIVREX CHAT ═══
+let chatOpen = false;
+let chatRtChannel = null;
+let chatNotifChannel = null;
+let chatAllMsgs = [];
+let chatPhotoFile = null;
+let unread = 0;
+const SENDER = 'client';
+const CHAT_URL = 'https://lfsrpuphrvwxhnonddru.supabase.co';
+const CHAT_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxmc3JwdXBocnZ3eGhub25kZHJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MTg4ODQsImV4cCI6MjA5MTQ5NDg4NH0.wPsTGQprpZDu7lJoVKLMwLn-FPS6-WWdF35kvTSyAy8';
+
+function getChatSb() { return supabase.createClient(CHAT_URL, CHAT_KEY); }
+
+function openChat() {
+  document.getElementById('chatOverlay').classList.add('on');
+  chatOpen = true;
+  unread = 0;
+  const badge = document.getElementById('chatBadge');
+  if (badge) { badge.textContent = ''; badge.classList.remove('on'); }
+  loadChatMsgs();
+  subscribeChatRt();
+  setTimeout(scrollChatBottom, 150);
+}
+
+function closeChat() {
+  document.getElementById('chatOverlay').classList.remove('on');
+  chatOpen = false;
+  if (chatRtChannel) { try { chatRtChannel.unsubscribe(); } catch(e) {} chatRtChannel = null; }
+}
+
+function closeChatOutside(e) { if (e.target.id === 'chatOverlay') closeChat(); }
+
+async function loadChatMsgs() {
+  if (!orderId) return;
+  try {
+    const { data } = await getChatSb().from('messages').select('*').eq('order_id', orderId).order('created_at', { ascending: true });
+    chatAllMsgs = data || [];
+    renderChatMsgs();
+  } catch(e) { }
+}
+
+function renderChatMsgs() {
+  const container = document.getElementById('chatMsgs');
+  const empty = document.getElementById('chatEmpty');
+  if (!container) return;
+  container.querySelectorAll('.chat-wrap,.chat-day').forEach(el => el.remove());
+  if (!chatAllMsgs.length) { if (empty) empty.style.display = 'flex'; return; }
+  if (empty) empty.style.display = 'none';
+  let lastDate = '';
+  chatAllMsgs.forEach(msg => {
+    const d = new Date(msg.created_at);
+    const dateStr = d.toLocaleDateString('fr-CH', { day:'numeric', month:'long' });
+    if (dateStr !== lastDate) {
+      lastDate = dateStr;
+      const dayEl = document.createElement('div');
+      dayEl.className = 'chat-day';
+      dayEl.textContent = dateStr;
+      container.appendChild(dayEl);
+    }
+    const isMe = msg.sender === SENDER;
+    const wrap = document.createElement('div');
+    wrap.className = 'chat-wrap ' + (isMe ? 'me' : 'them');
+    const t = d.toLocaleTimeString('fr-CH', { hour:'2-digit', minute:'2-digit' });
+    let inner = '';
+    if (!isMe) inner += '<div class="chat-lbl">' + msg.sender + '</div>';
+    inner += '<div class="chat-bubble">';
+    if (msg.text) inner += msg.text.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    if (msg.photo_url) inner += '<img src="' + msg.photo_url + '" onclick="openChatImg(\'' + msg.photo_url + '\')" loading="lazy">';
+    inner += '</div><div class="chat-ts">' + t + '</div>';
+    wrap.innerHTML = inner;
+    container.appendChild(wrap);
+  });
+  scrollChatBottom();
+}
+
+function scrollChatBottom() {
+  const c = document.getElementById('chatMsgs');
+  if (c) c.scrollTop = c.scrollHeight;
+}
+
+function subscribeChatRt() {
+  if (!orderId || chatRtChannel) return;
+  try {
+    chatRtChannel = getChatSb().channel('chat-rt-s4-' + orderId)
+      .on('postgres_changes', { event:'INSERT', schema:'public', table:'messages', filter:'order_id=eq.' + orderId },
+        p => { chatAllMsgs.push(p.new); renderChatMsgs(); }
+      ).subscribe();
+  } catch(e) { }
+}
+
+function initChatNotif() {
+  if (!orderId || chatNotifChannel) return;
+  try {
+    chatNotifChannel = getChatSb().channel('chat-notif-s4-' + orderId)
+      .on('postgres_changes', { event:'INSERT', schema:'public', table:'messages', filter:'order_id=eq.' + orderId },
+        p => {
+          if (!chatOpen && p.new.sender !== SENDER) {
+            unread++;
+            const badge = document.getElementById('chatBadge');
+            if (badge) { badge.textContent = unread; badge.classList.add('on'); }
+          }
+        }
+      ).subscribe();
+  } catch(e) { }
+}
+
+function chatInputChange() {
+  const inp = document.getElementById('chatInput');
+  const btn = document.getElementById('chatSendBtn');
+  if (!inp || !btn) return;
+  inp.style.height = 'auto';
+  inp.style.height = Math.min(inp.scrollHeight, 80) + 'px';
+  btn.disabled = !inp.value.trim() && !chatPhotoFile;
+}
+
+function chatKeyDown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMsg(); }
+}
+
+async function sendChatMsg() {
+  const inp = document.getElementById('chatInput');
+  const btn = document.getElementById('chatSendBtn');
+  const text = inp ? inp.value.trim() : '';
+  if (!text && !chatPhotoFile) return;
+  if (!orderId) return;
+  btn.disabled = true;
+  let photoUrl = null;
+  if (chatPhotoFile) {
+    try {
+      const fname = 'chat/' + orderId + '/' + Date.now() + '.' + chatPhotoFile.name.split('.').pop();
+      const { error: upErr } = await getChatSb().storage.from('livrex-photos').upload(fname, chatPhotoFile, { contentType: chatPhotoFile.type, upsert: true });
+      if (!upErr) {
+        const { data: u } = getChatSb().storage.from('livrex-photos').getPublicUrl(fname);
+        photoUrl = u?.publicUrl || null;
+      }
+    } catch(e) { }
+    clearChatPhoto();
+  }
+  try {
+    await getChatSb().from('messages').insert({ order_id: orderId, sender: SENDER, text: text || null, photo_url: photoUrl });
+    if (inp) { inp.value = ''; inp.style.height = 'auto'; }
+  } catch(e) { }
+  btn.disabled = true;
+}
+
+function triggerChatPhoto() { document.getElementById('chatPhotoInput')?.click(); }
+
+function handleChatPhoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  chatPhotoFile = file;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const p = document.getElementById('chatPreview');
+    const pi = document.getElementById('chatPreviewImg');
+    if (p) p.style.display = 'block';
+    if (pi) pi.src = ev.target.result;
+    document.getElementById('chatSendBtn').disabled = false;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function clearChatPhoto() {
+  chatPhotoFile = null;
+  const p = document.getElementById('chatPreview');
+  if (p) p.style.display = 'none';
+  chatInputChange();
+}
+
+function openChatImg(url) {
+  const full = document.getElementById('chatFull');
+  const img = document.getElementById('chatFullImg');
+  if (!full || !img) return;
+  img.src = url;
+  full.classList.add('on');
 }
 </script>
 </body>
